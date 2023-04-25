@@ -1,0 +1,19 @@
+# Here we define graph in a separate file
+
+input_stream: "input"
+output_stream: "output"
+
+# This is the source node that generates the stream "gen"
+node {
+    calculator: "StringSourceCalculator"
+    output_stream: "STR:gen"
+}
+
+# This node joins streams "input" and "gen"
+# What happens if you swap the indices 0 and 1 ?
+node {
+    calculator: "StringJoinCalculator"
+    input_stream: "STR:0:input"
+    input_stream: "STR:1:gen"
+    output_stream: "STR:output"
+}
