@@ -111,7 +111,7 @@ absl::Status SimplePipeline() {
 
 int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
-  std::cout << "Example 1.1 : Simplest mediapipe pipeline ..." << std::endl;
+  std::cout << "Example 1.2 : First custom calculator..." << std::endl;
   CHECK(mediapipe::SimplePipeline().ok());
   return 0;
 }
