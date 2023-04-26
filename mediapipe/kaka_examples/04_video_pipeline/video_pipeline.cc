@@ -102,8 +102,7 @@ absl::Status VideoPipeline() {
     cvtColor(frame_out, frame_out, cv::COLOR_RGB2BGR);
     cv::imshow("Image", frame_out);
     if (cv::waitKey(1) == 'q')
-      // I was not sure which Abseil error to use here ...
-      return absl::CancelledError("It's time to QUIT !");
+      grab_frames = false;
   }
 
   LOG(INFO) << "Shutting down.";
