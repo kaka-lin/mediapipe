@@ -19,7 +19,7 @@ namespace mediapipe {
 
 absl::Status ObjectDetection() {
   // Load the graph config from a file
-  std::string graph_path("mediapipe/kaka_examples/06_object_detection_ssd/object_detection.pbtxt");
+  std::string graph_path("mediapipe/kaka_examples/31_object_detection_ssd/object_detection.pbtxt");
   std::string k_proto;
   MP_RETURN_IF_ERROR(file::GetContents(graph_path, &k_proto));
 

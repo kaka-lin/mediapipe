@@ -14,7 +14,7 @@ namespace mediapipe {
 
 absl::Status JoinStrings() {
   // Load the graph config from a file
-  std::string graph_path("mediapipe/kaka_examples/03_join_strings/k_graph.pbtxt");
+  std::string graph_path("mediapipe/kaka_examples/13_join_strings/k_graph.pbtxt");
   std::string k_proto;
   MP_RETURN_IF_ERROR(file::GetContents(graph_path, &k_proto));
 
