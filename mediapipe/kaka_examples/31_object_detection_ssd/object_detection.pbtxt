@@ -65,6 +65,7 @@ node {
   node_options: {
     [type.googleapis.com/mediapipe.TfLiteInferenceCalculatorOptions] {
       model_path: "mediapipe/models/ssdlite_object_detection.tflite"
+      delegate { xnnpack{} }
     }
   }
 }
