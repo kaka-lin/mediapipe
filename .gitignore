@@ -8,3 +8,6 @@ node_modules/
 
 # Out file
 out.mp4
+
+# vscode
+.vscode
