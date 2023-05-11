@@ -1,0 +1,18 @@
+// This is the standard syntax for calculator options protobuf type
+syntax = "proto2";
+
+// Put GoblinCalculatorOptions into C++ namespace mediapipe
+package mediapipe;
+
+// Import proto file that defines CalculatorOptions
+import "mediapipe/framework/calculator.proto";
+
+// Define the protobuf type GoblinCalculatorOptions
+message AddConstantCalculatorOptions{
+  extend mediapipe.CalculatorOptions {
+    optional AddConstantCalculatorOptions ext = 21666;
+  }
+  // Two double options, with defaults
+  optional double constant = 1 [default = 10];
+}
+
