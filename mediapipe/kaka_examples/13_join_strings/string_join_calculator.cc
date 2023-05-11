@@ -8,7 +8,7 @@ namespace mediapipe {
   // This calculator joins two strings
   class StringJoinCalculator : public CalculatorBase {
    public:
-    static Status GetContract(CalculatorContract *cc) {
+    static Status GetContract(CalculatorContract* cc) {
       // When calculator has more than one input or output, "anonymous streams" become messy.
       // So we use named streams. Here we use `tag+number` to identify the stream.
       // Two inputs are named "STR:0:" and "STR:1:" and one output is named "STR:".

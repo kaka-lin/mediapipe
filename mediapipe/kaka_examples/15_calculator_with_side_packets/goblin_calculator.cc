@@ -20,7 +20,7 @@ namespace mediapipe {
 
     // Open method is executed once when starting the graph
     // "It can be used to parse input side packets, they are already available"
-    Status Open(CalculatorContext *cc) override {
+    Status Open(CalculatorContext* cc) override {
       // Extract "a" and "b" from input side packets
       Packet p1 = cc->InputSidePackets().Index(0);
       Packet p2 = cc->InputSidePackets().Index(1);
@@ -30,7 +30,7 @@ namespace mediapipe {
       return OkStatus();
     }
 
-    Status Process(CalculatorContext *cc) override {
+    Status Process(CalculatorContext* cc) override {
       // Receive the input packet
       Packet p_in = cc->Inputs().Index(0).Value();
 

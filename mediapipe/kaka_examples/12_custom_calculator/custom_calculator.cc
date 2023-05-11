@@ -25,7 +25,7 @@ namespace mediapipe {
     // Synchronization. MediaPiPe automatically synchronizes streams
     // If there are several input streams, all input packets have the same timestamp
     // All operations are performed through the CalculatorContext object
-    Status Process(CalculatorContext *cc) override {
+    Status Process(CalculatorContext* cc) override {
       // Receive the input packet
       Packet p_in = cc->Inputs().Index(0).Value();
 

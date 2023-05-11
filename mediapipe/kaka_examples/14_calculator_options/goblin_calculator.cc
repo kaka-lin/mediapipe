@@ -20,7 +20,7 @@ namespace mediapipe {
 
     // Open method is executed once when starting the graph
     // "It can be used to parse options"
-    Status Open(CalculatorContext *cc) override {
+    Status Open(CalculatorContext* cc) override {
       // Copy options to class fields
       auto options = cc->Options<GoblinCalculatorOptions>();
       a = options.opt_a();
@@ -29,7 +29,7 @@ namespace mediapipe {
       return OkStatus();
     }
 
-    Status Process(CalculatorContext *cc) override {
+    Status Process(CalculatorContext* cc) override {
       // Receive the input packet
       Packet p_in = cc->Inputs().Index(0).Value();
 
