@@ -49,7 +49,7 @@ absl::Status VideoPipeline() {
         [type.googleapis.com/mediapipe.ImageTransformationCalculatorOptions] {
           output_width: 640
           output_height: 480
-          scale_mode: FIT # letterbox
+          #scale_mode: FIT # letterbox
         }
       }
     }
@@ -61,6 +61,7 @@ absl::Status VideoPipeline() {
         [mediapipe.KImageScaleCalculatorOptions.ext] {
           output_width: 416
           output_height: 416
+          scale_mode: "letterbox"
         }
       }
     }

@@ -33,6 +33,7 @@ class KImageScaleCalculator : public CalculatorBase {
   KImageScaleCalculatorOptions options_;
   int output_width_ = 0;
   int output_height_ = 0;
+  std::string scale_mode_ = "normal";
 };
 
 // We must register our calculator with MP, so that it can be used in graphs
@@ -60,6 +61,7 @@ absl::Status KImageScaleCalculator::Open(CalculatorContext* cc) {
   options_ = cc->Options<KImageScaleCalculatorOptions>();
   output_width_ = options_.output_width();
   output_height_ = options_.output_height();
+  scale_mode_ = options_.scale_mode();
   return absl::OkStatus();
 }
 
@@ -86,13 +88,39 @@ absl::Status KImageScaleCalculator::ResizeImage(CalculatorContext* cc) {
   const int input_height = input_mat.rows;
   int output_width = output_width_;
   int output_height = output_height_;
+  std::string scale_mode = scale_mode_;
 
+  ///////////////////////////////////////////////////////////////////////////
   // Resize !!!
-  int scale_flag =
-      input_width > output_width && input_height > output_height
-          ? cv::INTER_AREA : cv::INTER_LINEAR;
-  cv::resize(input_mat, scaled_mat, cv::Size(output_width, output_height),
-             0, 0, scale_flag);
+  if (scale_mode == "letterbox") {
+    // Resize with keep aspect ratio
+    const float scale = std::min(static_cast<float>(output_width) / input_width,
+                                 static_cast<float>(output_height) / input_height);
+    const int target_width = std::round(input_width * scale);
+    const int target_height = std::round(input_height * scale);
+
+    int scale_flag = scale < 1.0f ? cv::INTER_AREA : cv::INTER_LINEAR;
+
+    cv::Mat intermediate_mat;
+    cv::resize(input_mat, intermediate_mat,
+               cv::Size(target_width, target_height), 0, 0, scale_flag);
+
+    // Put the image that after resized into the center of new image
+    const int top = (output_height - target_height) / 2;
+    const int bottom = output_height - target_height - top;
+    const int left = (output_width - target_width) / 2;
+    const int right = output_width - target_width - left;
+    cv::copyMakeBorder(intermediate_mat, scaled_mat, top, bottom, left, right,
+                       cv::BORDER_CONSTANT, CV_RGB(0, 0, 0));
+  } else {
+    // Resize without keep aspect ratio
+    int scale_flag =
+        input_width > output_width && input_height > output_height
+            ? cv::INTER_AREA : cv::INTER_LINEAR;
+    cv::resize(input_mat, scaled_mat, cv::Size(output_width, output_height),
+               0, 0, scale_flag);
+  }
+  ////////////////////////////////////////////////////////////////////////////
 
   // Create output frame from scaled_mat
   std::unique_ptr<ImageFrame> output_frame(

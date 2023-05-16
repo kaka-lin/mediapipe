@@ -16,6 +16,7 @@ message KImageScaleCalculatorOptions{
   // Output dimensions. Set to 0 if they should be the same as the input.
   optional int32 output_width = 1 [default = 0];
   optional int32 output_height = 2 [default = 0];
+
+  // Scale mode.
+  optional string scale_mode = 3 [default = "normal"];
 }
-
-
