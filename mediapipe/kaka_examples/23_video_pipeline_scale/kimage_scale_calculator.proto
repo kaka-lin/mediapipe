@@ -1,0 +1,21 @@
+// This is the standard syntax for calculator options protobuf type
+syntax = "proto2";
+
+// Put GoblinCalculatorOptions into C++ namespace mediapipe
+package mediapipe;
+
+// Import proto file that defines CalculatorOptions
+import "mediapipe/framework/calculator.proto";
+
+// Define the protobuf type GoblinCalculatorOptions
+message KImageScaleCalculatorOptions{
+  extend mediapipe.CalculatorOptions {
+    optional KImageScaleCalculatorOptions ext = 348266;
+  }
+
+  // Output dimensions. Set to 0 if they should be the same as the input.
+  optional int32 output_width = 1 [default = 0];
+  optional int32 output_height = 2 [default = 0];
+}
+
+

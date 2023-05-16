@@ -6,5 +6,6 @@
 - CH 2: Related with video process operate
   - CH 2.1: Video pipeline
   - CH 2.2: Video pipeline with `ImageCroppingCalculator` and `ScaleImageCalculator`
+  - CH 2.3: Image Scale with `ScaleImageCalculator`, `ImageTransformationCalculator` and `Custom Image Scale Calculator`
 - ch3: Example of model inference
   - CH 3.1: Object Detection with `SSD MobileNetV2`
