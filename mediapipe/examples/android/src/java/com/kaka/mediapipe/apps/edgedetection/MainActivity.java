@@ -94,13 +94,6 @@ public class MainActivity extends AppCompatActivity {
   }
 
   @Override
-  public void onRequestPermissionsResult(
-      int requestCode, String[] permissions, int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
-  }
-
-  @Override
   protected void onResume() {
     super.onResume();
     // initialize the converter object
@@ -115,6 +108,42 @@ public class MainActivity extends AppCompatActivity {
   protected void onPause() {
     super.onPause();
     converter.close();
+
+    // Hide preview display until we re-open the camera again.
+    previewDisplayView.setVisibility(View.GONE);
+  }
+
+  @Override
+  public void onRequestPermissionsResult(
+      int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    PermissionHelper.onRequestPermissionsResult(requestCode, permissions, grantResults);
+  }
+
+  protected void onCameraStarted(SurfaceTexture surfaceTexture) {
+    previewFrameTexture = surfaceTexture;
+    // Make the display view visible to start showing the preview.
+    // This triggers the SurfaceHolder.Callback added to (the holder of) previewDisplayView.
+    previewDisplayView.setVisibility(View.VISIBLE);
+  }
+
+  protected Size computeViewSize(int width, int height) {
+    return new Size(width, height);
+  }
+
+  protected void onPreviewDisplaySurfaceChanged(
+      SurfaceHolder holder, int format, int width, int height) {
+    // (Re-)Compute the ideal size of the camera-preview display (the area that the
+    // camera-preview frames get rendered onto, potentially with scaling and rotation)
+    // based on the size of the SurfaceView that contains the display.
+    Size viewSize = computeViewSize(width, height);
+    Size displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize);
+    boolean isCameraRotated = cameraHelper.isCameraRotated();
+
+    // Configure the output width and height as the computed display size.
+    converter.setDestinationSize(
+        isCameraRotated ? displaySize.getHeight() : displaySize.getWidth(),
+        isCameraRotated ? displaySize.getWidth() : displaySize.getHeight());
   }
 
   private void setupPreviewDisplayView() {
@@ -133,17 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
               @Override
               public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-                // (Re-)Compute the ideal size of the camera-preview display (the area that the
-                // camera-preview frames get rendered onto, potentially with scaling and rotation)
-                // based on the size of the SurfaceView that contains the display.
-                Size viewSize = new Size(width, height);
-                Size displaySize = cameraHelper.computeDisplaySizeFromViewSize(viewSize);
-
-                // Connect the converter to the camera-preview frames as its input (via
-                // previewFrameTexture), and configure the output width and height as the computed
-                // display size.
-                converter.setSurfaceTextureAndAttachToGLContext(
-                    previewFrameTexture, displaySize.getWidth(), displaySize.getHeight());
+                onPreviewDisplaySurfaceChanged(holder, format, width, height);
               }
 
               @Override
@@ -155,17 +174,17 @@ public class MainActivity extends AppCompatActivity {
 
   public void startCamera() {
     cameraHelper = new CameraXPreviewHelper();
+    previewFrameTexture = converter.getSurfaceTexture();
     cameraHelper.setOnCameraStartedListener(
       surfaceTexture -> {
-        previewFrameTexture = surfaceTexture;
-        // Make the display view visible to start showing the preview.
-        previewDisplayView.setVisibility(View.VISIBLE);
+        onCameraStarted(surfaceTexture);
     });
 
     CameraHelper.CameraFacing cameraFacing =
         applicationInfo.metaData.getBoolean("cameraFacingFront", false)
             ? CameraHelper.CameraFacing.FRONT
             : CameraHelper.CameraFacing.BACK;
-    cameraHelper.startCamera(this, cameraFacing, /*unusedSurfaceTexture=*/ null);
+    cameraHelper.startCamera(
+      this, cameraFacing, previewFrameTexture, null);
   }
 }
