@@ -1,0 +1,14 @@
+# MediaPipe graph that performs "NOTHING" on a live video stream.
+# Used in the examples in
+# mediapipe/examples/android/src/java/com/google/mediapipe/apps/basic:helloworld
+# and mediapipe/examples/ios/helloworld.
+
+# Images coming into and out of the graph.
+input_stream: "input_video"
+output_stream: "output_video"
+
+node {
+  calculator: "PassThroughCalculator"
+  input_stream: "VIDEO:input_video"
+  output_stream: "VIDEO:output_video"
+}
