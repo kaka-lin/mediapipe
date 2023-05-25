@@ -597,5 +597,13 @@ http_archive(
     build_file = "@//third_party:halide.BUILD",
 )
 
-android_sdk_repository(name = "androidsdk", path = "/Users/kaka/Library/Android/sdk")
-android_ndk_repository(name = "androidndk", api_level=21, path = "/Users/kaka/Library/Android/ndk/android-ndk-r21")
+android_sdk_repository(
+    name = "androidsdk",
+    path = "/Users/kaka/Library/Android/sdk"
+)
+
+android_ndk_repository(
+    name = "androidndk",
+    api_level = 26,
+    path = "/Users/kaka/Library/Android/sdk/ndk/21.4.7075529"
+)
