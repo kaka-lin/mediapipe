@@ -340,7 +340,7 @@ new_local_repository(
     # For local MacOS builds, the path should point to an opencv@3 installation.
     # If you edit the path here, you will also need to update the corresponding
     # prefix in "opencv_macos.BUILD".
-    path = "/opt/homebrew",  # e.g. /usr/local/Cellar for HomeBrew
+    path = "/opt/opencv",  # e.g. /usr/local/Cellar for HomeBrew
 )
 
 new_local_repository(
