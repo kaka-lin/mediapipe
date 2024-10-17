@@ -26,6 +26,7 @@ android_library(
     visibility = ["//visibility:public"],
     deps = [
         "//mediapipe/framework:calculator_java_proto_lite",
+        "//mediapipe/framework:calculator_options_java_proto_lite",
         "//mediapipe/java/com/google/mediapipe/framework:android_framework",
         "//mediapipe/java/com/google/mediapipe/glutil",
         "//third_party:androidx_appcompat",
@@ -71,7 +72,10 @@ android_library(
         "AudioDataProducer.java",
     ],
     visibility = ["//visibility:public"],
-    deps = ["@maven//:com_google_guava_guava"],
+    deps = [
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+    ],
 )
 
 # MicrophoneHelper that provides access to audio data from a microphone

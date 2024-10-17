@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "mediapipe/calculators/tensor/image_to_tensor_utils.h"
@@ -30,8 +32,11 @@
 #include "mediapipe/framework/port/logging.h"
 #include "mediapipe/framework/port/opencv_core_inc.h"
 #include "mediapipe/framework/port/opencv_imgproc_inc.h"
+#include "mediapipe/framework/port/ret_check.h"
 #include "mediapipe/framework/port/status.h"
+#include "mediapipe/framework/port/status_macros.h"
 #include "mediapipe/gpu/gpu_origin.pb.h"
+#include "mediapipe/gpu/gpu_service.h"
 #include "mediapipe/tasks/cc/vision/face_stylizer/calculators/tensors_to_image_calculator.pb.h"
 
 #if !MEDIAPIPE_DISABLE_GPU
@@ -98,19 +103,32 @@ bool CanUseGpu() {
 //   OUTPUT - mediapipe::Image.
 class TensorsToImageCalculator : public Node {
  public:
-  static constexpr Input<std::vector<Tensor>> kInputTensors{"TENSORS"};
+  static constexpr Input<std::vector<Tensor>>::Optional kInputTensors{
+      "TENSORS"};
+  static constexpr Input<Tensor>::Optional kInputTensor{"TENSOR"};
   static constexpr Output<Image> kOutputImage{"IMAGE"};
 
-  MEDIAPIPE_NODE_CONTRACT(kInputTensors, kOutputImage);
+  MEDIAPIPE_NODE_CONTRACT(kInputTensors, kInputTensor, kOutputImage);
 
   static absl::Status UpdateContract(CalculatorContract* cc);
-  absl::Status Open(CalculatorContext* cc);
-  absl::Status Process(CalculatorContext* cc);
-  absl::Status Close(CalculatorContext* cc);
+  absl::Status Open(CalculatorContext* cc) override;
+  absl::Status Process(CalculatorContext* cc) override;
+  absl::Status Close(CalculatorContext* cc) override;
 
  private:
   TensorsToImageCalculatorOptions options_;
+
+  // Returns true if kInputTensor or kInputTensors (whatever is connected) is
+  // empty.
+  bool IsInputTensorEmpty(CalculatorContext* cc);
+
+  // Retrieves the input tensor from kInputTensor or kInputTensors. Returns
+  // nullptr if the connected input stream was empty.
+  absl::StatusOr<std::reference_wrapper<const Tensor>> GetInputTensor(
+      CalculatorContext* cc);
+
   absl::Status CpuProcess(CalculatorContext* cc);
+  int tensor_position_;
 
 #if !MEDIAPIPE_DISABLE_GPU
 #if MEDIAPIPE_METAL_ENABLED
@@ -139,11 +157,14 @@ class TensorsToImageCalculator : public Node {
 MEDIAPIPE_REGISTER_NODE(::mediapipe::tasks::TensorsToImageCalculator);
 
 absl::Status TensorsToImageCalculator::UpdateContract(CalculatorContract* cc) {
+  RET_CHECK(kInputTensors(cc).IsConnected() ^ kInputTensor(cc).IsConnected())
+      << "Either TENSORS or TENSOR must be specified";
 #if !MEDIAPIPE_DISABLE_GPU
 #if MEDIAPIPE_METAL_ENABLED
   MP_RETURN_IF_ERROR([MPPMetalHelper updateContract:cc]);
 #else
-  return GlCalculatorHelper::UpdateContract(cc);
+  return GlCalculatorHelper::UpdateContract(cc,
+                                            /*requesst_gpu_as_optional=*/true);
 #endif  // MEDIAPIPE_METAL_ENABLED
 #endif  // !MEDIAPIPE_DISABLE_GPU
   return absl::OkStatus();
@@ -151,21 +172,15 @@ absl::Status TensorsToImageCalculator::UpdateContract(CalculatorContract* cc) {
 
 absl::Status TensorsToImageCalculator::Open(CalculatorContext* cc) {
   options_ = cc->Options<TensorsToImageCalculatorOptions>();
-  if (CanUseGpu()) {
-#if !MEDIAPIPE_DISABLE_GPU
-#if MEDIAPIPE_METAL_ENABLED
-    gpu_helper_ = [[MPPMetalHelper alloc] initWithCalculatorContext:cc];
-    RET_CHECK(gpu_helper_);
-#else
-    MP_RETURN_IF_ERROR(gl_helper_.Open(cc));
-#endif  // MEDIAPIPE_METAL_ENABLED
-#endif  // !MEDIAPIPE_DISABLE_GPU
-  } else {
-    CHECK(options_.has_input_tensor_float_range() ^
-          options_.has_input_tensor_uint_range())
+  if (!CanUseGpu()) {
+    RET_CHECK(options_.has_input_tensor_float_range() ^
+              options_.has_input_tensor_uint_range())
         << "Must specify either `input_tensor_float_range` or "
            "`input_tensor_uint_range` in the calculator options";
   }
+  tensor_position_ = options_.tensor_position();
+  RET_CHECK(!kInputTensor(cc).IsConnected() || tensor_position_ == 0)
+      << "The tensor_position option cannot be used with the TENSOR input";
 
   return absl::OkStatus();
 }
@@ -176,7 +191,9 @@ absl::Status TensorsToImageCalculator::Process(CalculatorContext* cc) {
 #if MEDIAPIPE_METAL_ENABLED
     return MetalProcess(cc);
 #else
-    return GlProcess(cc);
+    if (cc->Service(kGpuService).IsAvailable()) {
+      return GlProcess(cc);
+    }
 #endif  // MEDIAPIPE_METAL_ENABLED
 #endif  // !MEDIAPIPE_DISABLE_GPU
   }
@@ -185,34 +202,56 @@ absl::Status TensorsToImageCalculator::Process(CalculatorContext* cc) {
 
 absl::Status TensorsToImageCalculator::Close(CalculatorContext* cc) {
 #if !MEDIAPIPE_DISABLE_GPU && !MEDIAPIPE_METAL_ENABLED
-  gl_helper_.RunInGlContext([this] {
+  if (gl_initialized_) {
+    gl_helper_.RunInGlContext([this] {
 #if MEDIAPIPE_OPENGL_ES_VERSION >= MEDIAPIPE_OPENGL_ES_31
-    gl_compute_program_.reset();
+      gl_compute_program_.reset();
 #else
-    if (program_) glDeleteProgram(program_);
-    program_ = 0;
+      if (program_) glDeleteProgram(program_);
+      program_ = 0;
 #endif  // MEDIAPIPE_OPENGL_ES_VERSION >= MEDIAPIPE_OPENGL_ES_31
-  });
+    });
+  }
 #endif  // !MEDIAPIPE_DISABLE_GPU && !MEDIAPIPE_METAL_ENABLED
   return absl::OkStatus();
 }
 
-absl::Status TensorsToImageCalculator::CpuProcess(CalculatorContext* cc) {
-  if (kInputTensors(cc).IsEmpty()) {
-    return absl::OkStatus();
+bool TensorsToImageCalculator::IsInputTensorEmpty(CalculatorContext* cc) {
+  if (kInputTensor(cc).IsConnected()) {
+    return kInputTensor(cc).IsEmpty();
   }
-  const auto& input_tensors = kInputTensors(cc).Get();
-  RET_CHECK_EQ(input_tensors.size(), 1)
-      << "Expect 1 input tensor, but have " << input_tensors.size();
+  return kInputTensors(cc).IsEmpty();
+}
 
-  const auto& input_tensor = input_tensors[0];
+absl::StatusOr<std::reference_wrapper<const Tensor>>
+TensorsToImageCalculator::GetInputTensor(CalculatorContext* cc) {
+  if (kInputTensor(cc).IsConnected()) {
+    return kInputTensor(cc).Get();
+  }
+
+  const std::vector<Tensor>& input_tensors = kInputTensors(cc).Get();
+  RET_CHECK_GT(input_tensors.size(), tensor_position_)
+      << "Expect input tensor at position " << tensor_position_
+      << ", but have tensors of size " << input_tensors.size();
+  return input_tensors[tensor_position_];
+}
+
+absl::Status TensorsToImageCalculator::CpuProcess(CalculatorContext* cc) {
+  if (IsInputTensorEmpty(cc)) return absl::OkStatus();
+  MP_ASSIGN_OR_RETURN(const Tensor& input_tensor, GetInputTensor(cc));
+
   const int tensor_in_height = input_tensor.shape().dims[1];
   const int tensor_in_width = input_tensor.shape().dims[2];
   const int tensor_in_channels = input_tensor.shape().dims[3];
-  RET_CHECK_EQ(tensor_in_channels, 3);
+  RET_CHECK(tensor_in_channels == 3 || tensor_in_channels == 1);
 
-  auto output_frame = std::make_shared<ImageFrame>(
-      mediapipe::ImageFormat::SRGB, tensor_in_width, tensor_in_height);
+  auto format = mediapipe::ImageFormat::SRGB;
+  if (tensor_in_channels == 1) {
+    format = mediapipe::ImageFormat::GRAY8;
+  }
+
+  auto output_frame =
+      std::make_shared<ImageFrame>(format, tensor_in_width, tensor_in_height);
   cv::Mat output_matview = mediapipe::formats::MatView(output_frame.get());
 
   constexpr float kOutputImageRangeMin = 0.0f;
@@ -223,24 +262,26 @@ absl::Status TensorsToImageCalculator::CpuProcess(CalculatorContext* cc) {
         CV_MAKETYPE(CV_32F, tensor_in_channels),
         const_cast<float*>(input_tensor.GetCpuReadView().buffer<float>()));
     auto input_range = options_.input_tensor_float_range();
-    ASSIGN_OR_RETURN(auto transform,
-                     GetValueRangeTransformation(
-                         input_range.min(), input_range.max(),
-                         kOutputImageRangeMin, kOutputImageRangeMax));
-    tensor_matview.convertTo(output_matview, CV_8UC3, transform.scale,
-                             transform.offset);
+    MP_ASSIGN_OR_RETURN(auto transform,
+                        GetValueRangeTransformation(
+                            input_range.min(), input_range.max(),
+                            kOutputImageRangeMin, kOutputImageRangeMax));
+    tensor_matview.convertTo(output_matview,
+                             CV_MAKETYPE(CV_8U, tensor_in_channels),
+                             transform.scale, transform.offset);
   } else if (input_tensor.element_type() == Tensor::ElementType::kUInt8) {
     cv::Mat tensor_matview(
         cv::Size(tensor_in_width, tensor_in_height),
         CV_MAKETYPE(CV_8U, tensor_in_channels),
         const_cast<uint8_t*>(input_tensor.GetCpuReadView().buffer<uint8_t>()));
     auto input_range = options_.input_tensor_uint_range();
-    ASSIGN_OR_RETURN(auto transform,
-                     GetValueRangeTransformation(
-                         input_range.min(), input_range.max(),
-                         kOutputImageRangeMin, kOutputImageRangeMax));
-    tensor_matview.convertTo(output_matview, CV_8UC3, transform.scale,
-                             transform.offset);
+    MP_ASSIGN_OR_RETURN(auto transform,
+                        GetValueRangeTransformation(
+                            input_range.min(), input_range.max(),
+                            kOutputImageRangeMin, kOutputImageRangeMax));
+    tensor_matview.convertTo(output_matview,
+                             CV_MAKETYPE(CV_8U, tensor_in_channels),
+                             transform.scale, transform.offset);
   } else {
     return absl::InvalidArgumentError(
         absl::Substitute("Type of tensor must be kFloat32 or kUInt8, got: $0",
@@ -260,14 +301,14 @@ absl::Status TensorsToImageCalculator::MetalProcess(CalculatorContext* cc) {
     metal_initialized_ = true;
   }
 
-  if (kInputTensors(cc).IsEmpty()) {
-    return absl::OkStatus();
-  }
-  const auto& input_tensors = kInputTensors(cc).Get();
-  RET_CHECK_EQ(input_tensors.size(), 1)
-      << "Expect 1 input tensor, but have " << input_tensors.size();
-  const int tensor_width = input_tensors[0].shape().dims[2];
-  const int tensor_height = input_tensors[0].shape().dims[1];
+  if (IsInputTensorEmpty(cc)) return absl::OkStatus();
+  MP_ASSIGN_OR_RETURN(const Tensor& input_tensor, GetInputTensor(cc));
+
+  const int tensor_width = input_tensor.shape().dims[2];
+  const int tensor_height = input_tensor.shape().dims[1];
+  const int tensor_channels = input_tensor.shape().dims[3];
+  // TODO: Add 1 channel support.
+  RET_CHECK(tensor_channels == 3);
 
   // TODO: Fix unused variable
   [[maybe_unused]] id<MTLDevice> device = gpu_helper_.mtlDevice;
@@ -278,7 +319,7 @@ absl::Status TensorsToImageCalculator::MetalProcess(CalculatorContext* cc) {
   [compute_encoder setComputePipelineState:to_buffer_program_];
 
   auto input_view =
-      mediapipe::MtlBufferView::GetReadView(input_tensors[0], command_buffer);
+      mediapipe::MtlBufferView::GetReadView(input_tensor, command_buffer);
   [compute_encoder setBuffer:input_view.buffer() offset:0 atIndex:0];
 
   mediapipe::GpuBuffer output =
@@ -300,6 +341,9 @@ absl::Status TensorsToImageCalculator::MetalProcess(CalculatorContext* cc) {
 }
 
 absl::Status TensorsToImageCalculator::MetalSetup(CalculatorContext* cc) {
+  gpu_helper_ = [[MPPMetalHelper alloc] initWithCalculatorContext:cc];
+  RET_CHECK(gpu_helper_);
+
   id<MTLDevice> device = gpu_helper_.mtlDevice;
   const std::string shader_source =
       R"(
@@ -355,7 +399,7 @@ absl::Status TensorsToImageCalculator::GlSetup(CalculatorContext* cc) {
       absl::StrCat(tflite::gpu::gl::GetShaderHeader(workgroup_size_), R"(
     precision highp float;
     layout(rgba8, binding = 0) writeonly uniform highp image2D output_texture;
-    uniform ivec2 out_size;
+    uniform ivec3 out_size;
   )");
 
   const std::string shader_body = R"(
@@ -366,10 +410,11 @@ absl::Status TensorsToImageCalculator::GlSetup(CalculatorContext* cc) {
     void main() {
       int out_width = out_size.x;
       int out_height = out_size.y;
+      int out_channels = out_size.z;
 
       ivec2 gid = ivec2(gl_GlobalInvocationID.xy);
       if (gid.x >= out_width || gid.y >= out_height) { return; }
-      int linear_index = 3 * (gid.y * out_width + gid.x);
+      int linear_index = out_channels * (gid.y * out_width + gid.x);
 
 #ifdef FLIP_Y_COORD
       int y_coord = out_height - gid.y - 1;
@@ -377,8 +422,14 @@ absl::Status TensorsToImageCalculator::GlSetup(CalculatorContext* cc) {
       int y_coord = gid.y;
 #endif  // defined(FLIP_Y_COORD)
 
+      vec4 out_value;
       ivec2 out_coordinate = ivec2(gid.x, y_coord);
-      vec4 out_value = vec4(input_data.elements[linear_index], input_data.elements[linear_index + 1], input_data.elements[linear_index + 2], 1.0);
+      if (out_channels == 3) {
+        out_value = vec4(input_data.elements[linear_index], input_data.elements[linear_index + 1], input_data.elements[linear_index + 2], 1.0);
+      } else {
+        float in_value = input_data.elements[linear_index];
+        out_value = vec4(in_value, in_value, in_value, 1.0);
+      }
       imageStore(output_texture, out_coordinate, out_value);
     })";
 
@@ -428,20 +479,23 @@ absl::Status TensorsToImageCalculator::GlSetup(CalculatorContext* cc) {
 }
 
 absl::Status TensorsToImageCalculator::GlProcess(CalculatorContext* cc) {
+  if (!gl_initialized_) {
+    MP_RETURN_IF_ERROR(gl_helper_.Open(cc));
+  }
+
   return gl_helper_.RunInGlContext([this, cc]() -> absl::Status {
     if (!gl_initialized_) {
       MP_RETURN_IF_ERROR(GlSetup(cc));
       gl_initialized_ = true;
     }
 
-    if (kInputTensors(cc).IsEmpty()) {
-      return absl::OkStatus();
-    }
-    const auto& input_tensors = kInputTensors(cc).Get();
-    RET_CHECK_EQ(input_tensors.size(), 1)
-        << "Expect 1 input tensor, but have " << input_tensors.size();
-    const int tensor_width = input_tensors[0].shape().dims[2];
-    const int tensor_height = input_tensors[0].shape().dims[1];
+    if (IsInputTensorEmpty(cc)) return absl::OkStatus();
+    MP_ASSIGN_OR_RETURN(const Tensor& input_tensor, GetInputTensor(cc));
+
+    const int tensor_width = input_tensor.shape().dims[2];
+    const int tensor_height = input_tensor.shape().dims[1];
+    const int tensor_in_channels = input_tensor.shape().dims[3];
+    RET_CHECK(tensor_in_channels == 3 || tensor_in_channels == 1);
 
 #if MEDIAPIPE_OPENGL_ES_VERSION >= MEDIAPIPE_OPENGL_ES_31
 
@@ -454,7 +508,7 @@ absl::Status TensorsToImageCalculator::GlProcess(CalculatorContext* cc) {
     glBindImageTexture(output_index, out_texture->id(), 0, GL_FALSE, 0,
                        GL_WRITE_ONLY, GL_RGBA8);
 
-    auto read_view = input_tensors[0].GetOpenGlBufferReadView();
+    auto read_view = input_tensor.GetOpenGlBufferReadView();
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, read_view.name());
 
     const tflite::gpu::uint3 workload = {tensor_width, tensor_height, 1};
@@ -462,8 +516,8 @@ absl::Status TensorsToImageCalculator::GlProcess(CalculatorContext* cc) {
         tflite::gpu::DivideRoundUp(workload, workgroup_size_);
 
     glUseProgram(gl_compute_program_->id());
-    glUniform2i(glGetUniformLocation(gl_compute_program_->id(), "out_size"),
-                tensor_width, tensor_height);
+    glUniform3i(glGetUniformLocation(gl_compute_program_->id(), "out_size"),
+                tensor_width, tensor_height, tensor_in_channels);
 
     MP_RETURN_IF_ERROR(gl_compute_program_->Dispatch(workgroups));
 
@@ -481,8 +535,8 @@ absl::Status TensorsToImageCalculator::GlProcess(CalculatorContext* cc) {
 
 #else
 
-    if (!input_tensors[0].ready_as_opengl_texture_2d()) {
-      (void)input_tensors[0].GetCpuReadView();
+    if (!input_tensor.ready_as_opengl_texture_2d()) {
+      (void)input_tensor.GetCpuReadView();
     }
 
     auto output_texture =
@@ -490,7 +544,7 @@ absl::Status TensorsToImageCalculator::GlProcess(CalculatorContext* cc) {
     gl_helper_.BindFramebuffer(output_texture);  // GL_TEXTURE0
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D,
-                  input_tensors[0].GetOpenGlTexture2dReadView().name());
+                  input_tensor.GetOpenGlTexture2dReadView().name());
 
     MP_RETURN_IF_ERROR(gl_renderer_->GlRender(
         tensor_width, tensor_height, output_texture.width(),

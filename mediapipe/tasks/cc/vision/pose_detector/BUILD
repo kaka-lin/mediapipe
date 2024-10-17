@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ cc_library(
     name = "pose_detector_graph",
     srcs = ["pose_detector_graph.cc"],
     deps = [
+        "//mediapipe/calculators/core:clip_vector_size_calculator",
         "//mediapipe/calculators/core:clip_vector_size_calculator_cc_proto",
         "//mediapipe/calculators/tensor:image_to_tensor_calculator_cc_proto",
         "//mediapipe/calculators/tensor:inference_calculator",

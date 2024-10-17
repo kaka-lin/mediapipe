@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+ * Copyright 2022 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ const DEFAULT_SCORE = 0.0;
  * Converts a list of Classification protos to a Classifications object.
  */
 export function convertFromClassifications(
-    classifications: ClassificationProto[], headIndex = DEFAULT_INDEX,
+    classifications: readonly ClassificationProto[], headIndex = DEFAULT_INDEX,
     headName = ''): Classifications {
   const categories = classifications.map(classification => {
     return {

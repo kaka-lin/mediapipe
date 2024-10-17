@@ -1,4 +1,4 @@
-// Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+// Copyright 2023 The MediaPipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,17 +38,17 @@ typedef NS_ENUM(NSUInteger, MPPRunningMode) {
 
 } NS_SWIFT_NAME(RunningMode);
 
-NS_INLINE NSString *MPPRunningModeDisplayName(MPPRunningMode runningMode) {
-  if (runningMode > MPPRunningModeLiveStream) {
-    return nil;
+NS_INLINE NSString *_Nullable MPPRunningModeDisplayName(MPPRunningMode runningMode) {
+  switch (runningMode) {
+    case MPPRunningModeImage:
+      return @"Image";
+    case MPPRunningModeVideo:
+      return @"Video";
+    case MPPRunningModeLiveStream:
+      return @"Live Stream";
+    default:
+      return nil;
   }
-
-  NSString *displayNameMap[MPPRunningModeLiveStream + 1] = {
-      [MPPRunningModeImage] = @"Image",
-      [MPPRunningModeVideo] = @"Video",
-      [MPPRunningModeLiveStream] = @"Live Stream"};
-
-  return displayNameMap[runningMode];
 }
 
 NS_ASSUME_NONNULL_END

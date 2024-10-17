@@ -1,4 +1,4 @@
-/* Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2022 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,7 +84,8 @@ struct ObjectDetectorOptions {
   // The user-defined result callback for processing live stream data.
   // The result callback should only be specified when the running mode is set
   // to RunningMode::LIVE_STREAM.
-  std::function<void(absl::StatusOr<ObjectDetectorResult>, const Image&, int64)>
+  std::function<void(absl::StatusOr<ObjectDetectorResult>, const Image&,
+                     int64_t)>
       result_callback = nullptr;
 };
 
@@ -99,7 +100,20 @@ struct ObjectDetectorOptions {
 //    - only RGB inputs are supported (`channels` is required to be 3).
 //    - if type is kTfLiteFloat32, NormalizationOptions are required to be
 //      attached to the metadata for input normalization.
-// Output tensors must be the 4 outputs of a `DetectionPostProcess` op, i.e:
+// Output tensors could be 2 output tensors or 4 output tensors.
+// The 2 output tensors must represent locations and scores, respectively.
+//  (kTfLiteFloat32)
+//   - locations tensor of size `[num_results x num_coords]`. The num_coords is
+//   the number of coordinates a location result represent. Usually in the
+//   form: [4 + 2 * keypoint_num], where 4 location values encode the bounding
+//   box (y_center, x_center, height, width) and the additional keypoints are in
+//   (y, x) order.
+//  (kTfLiteFloat32)
+//   - scores tensor of size `[num_results x num_classes]`. The values of a
+//   result represent the classification probability belonging to the class at
+//   the index, which is denoted in the label file of corresponding tensor
+//   metadata in the model file.
+// The 4 output tensors must come from `DetectionPostProcess` op, i.e:
 //  (kTfLiteFloat32)
 //   - locations tensor of size `[num_results x 4]`, the inner array
 //     representing bounding boxes in the form [top, left, right, bottom].
@@ -193,7 +207,7 @@ class ObjectDetector : public tasks::vision::core::BaseVisionTaskApi {
   // image_width) x [0, image_height)`, which are the dimensions of the
   // underlying image data.
   absl::StatusOr<ObjectDetectorResult> DetectForVideo(
-      mediapipe::Image image, int64 timestamp_ms,
+      mediapipe::Image image, int64_t timestamp_ms,
       std::optional<core::ImageProcessingOptions> image_processing_options =
           std::nullopt);
 
@@ -223,7 +237,7 @@ class ObjectDetector : public tasks::vision::core::BaseVisionTaskApi {
   //     longer be valid when the callback returns. To access the image data
   //     outside of the callback, callers need to make a copy of the image.
   //   - The input timestamp in milliseconds.
-  absl::Status DetectAsync(mediapipe::Image image, int64 timestamp_ms,
+  absl::Status DetectAsync(mediapipe::Image image, int64_t timestamp_ms,
                            std::optional<core::ImageProcessingOptions>
                                image_processing_options = std::nullopt);
 

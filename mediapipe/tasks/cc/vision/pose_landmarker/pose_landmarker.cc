@@ -1,4 +1,4 @@
-/* Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2023 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ limitations under the License.
 #include "mediapipe/tasks/cc/vision/pose_landmarker/pose_landmarker.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "mediapipe/framework/api2/builder.h"
@@ -63,8 +64,6 @@ constexpr char kNormLandmarksTag[] = "NORM_LANDMARKS";
 constexpr char kNormLandmarksStreamName[] = "norm_landmarks";
 constexpr char kPoseWorldLandmarksTag[] = "WORLD_LANDMARKS";
 constexpr char kPoseWorldLandmarksStreamName[] = "world_landmarks";
-constexpr char kPoseAuxiliaryLandmarksTag[] = "AUXILIARY_LANDMARKS";
-constexpr char kPoseAuxiliaryLandmarksStreamName[] = "auxiliary_landmarks";
 constexpr int kMicroSecondsPerMilliSecond = 1000;
 
 // Creates a MediaPipe graph config that contains a subgraph node of
@@ -83,9 +82,6 @@ CalculatorGraphConfig CreateGraphConfig(
       graph.Out(kNormLandmarksTag);
   subgraph.Out(kPoseWorldLandmarksTag).SetName(kPoseWorldLandmarksStreamName) >>
       graph.Out(kPoseWorldLandmarksTag);
-  subgraph.Out(kPoseAuxiliaryLandmarksTag)
-          .SetName(kPoseAuxiliaryLandmarksStreamName) >>
-      graph.Out(kPoseAuxiliaryLandmarksTag);
   subgraph.Out(kImageTag).SetName(kImageOutStreamName) >> graph.Out(kImageTag);
   if (output_segmentation_masks) {
     subgraph.Out(kSegmentationMaskTag).SetName(kSegmentationMaskStreamName) >>
@@ -163,8 +159,6 @@ absl::StatusOr<std::unique_ptr<PoseLandmarker>> PoseLandmarker::Create(
           status_or_packets.value()[kNormLandmarksStreamName];
       Packet pose_world_landmarks_packet =
           status_or_packets.value()[kPoseWorldLandmarksStreamName];
-      Packet pose_auxiliary_landmarks_packet =
-          status_or_packets.value()[kPoseAuxiliaryLandmarksStreamName];
       std::optional<std::vector<Image>> segmentation_mask = std::nullopt;
       if (output_segmentation_masks) {
         segmentation_mask = segmentation_mask_packet.Get<std::vector<Image>>();
@@ -175,15 +169,13 @@ absl::StatusOr<std::unique_ptr<PoseLandmarker>> PoseLandmarker::Create(
               /* pose_landmarks= */
               pose_landmarks_packet.Get<std::vector<NormalizedLandmarkList>>(),
               /* pose_world_landmarks= */
-              pose_world_landmarks_packet.Get<std::vector<LandmarkList>>(),
-              pose_auxiliary_landmarks_packet
-                  .Get<std::vector<NormalizedLandmarkList>>()),
+              pose_world_landmarks_packet.Get<std::vector<LandmarkList>>()),
           image_packet.Get<Image>(),
           pose_landmarks_packet.Timestamp().Value() /
               kMicroSecondsPerMilliSecond);
     };
   }
-  ASSIGN_OR_RETURN(
+  MP_ASSIGN_OR_RETURN(
       std::unique_ptr<PoseLandmarker> pose_landmarker,
       (core::VisionTaskApiFactory::Create<PoseLandmarker,
                                           PoseLandmarkerGraphOptionsProto>(
@@ -192,7 +184,9 @@ absl::StatusOr<std::unique_ptr<PoseLandmarker>> PoseLandmarker::Create(
               options->running_mode == core::RunningMode::LIVE_STREAM,
               options->output_segmentation_masks),
           std::move(options->base_options.op_resolver), options->running_mode,
-          std::move(packets_callback))));
+          std::move(packets_callback),
+          /*disable_default_service=*/
+          options->base_options.disable_default_service)));
 
   pose_landmarker->output_segmentation_masks_ =
       options->output_segmentation_masks;
@@ -209,10 +203,10 @@ absl::StatusOr<PoseLandmarkerResult> PoseLandmarker::Detect(
         "GPU input images are currently not supported.",
         MediaPipeTasksStatus::kRunnerUnexpectedInputError);
   }
-  ASSIGN_OR_RETURN(NormalizedRect norm_rect,
-                   ConvertToNormalizedRect(image_processing_options, image,
-                                           /*roi_allowed=*/false));
-  ASSIGN_OR_RETURN(
+  MP_ASSIGN_OR_RETURN(NormalizedRect norm_rect,
+                      ConvertToNormalizedRect(image_processing_options, image,
+                                              /*roi_allowed=*/false));
+  MP_ASSIGN_OR_RETURN(
       auto output_packets,
       ProcessImageData(
           {{kImageInStreamName, MakePacket<Image>(std::move(image))},
@@ -234,10 +228,7 @@ absl::StatusOr<PoseLandmarkerResult> PoseLandmarker::Detect(
           .Get<std::vector<mediapipe::NormalizedLandmarkList>>(),
       /* pose_world_landmarks */
       output_packets[kPoseWorldLandmarksStreamName]
-          .Get<std::vector<mediapipe::LandmarkList>>(),
-      /*pose_auxiliary_landmarks= */
-      output_packets[kPoseAuxiliaryLandmarksStreamName]
-          .Get<std::vector<mediapipe::NormalizedLandmarkList>>());
+          .Get<std::vector<mediapipe::LandmarkList>>());
 }
 
 absl::StatusOr<PoseLandmarkerResult> PoseLandmarker::DetectForVideo(
@@ -249,10 +240,10 @@ absl::StatusOr<PoseLandmarkerResult> PoseLandmarker::DetectForVideo(
         absl::StrCat("GPU input images are currently not supported."),
         MediaPipeTasksStatus::kRunnerUnexpectedInputError);
   }
-  ASSIGN_OR_RETURN(NormalizedRect norm_rect,
-                   ConvertToNormalizedRect(image_processing_options, image,
-                                           /*roi_allowed=*/false));
-  ASSIGN_OR_RETURN(
+  MP_ASSIGN_OR_RETURN(NormalizedRect norm_rect,
+                      ConvertToNormalizedRect(image_processing_options, image,
+                                              /*roi_allowed=*/false));
+  MP_ASSIGN_OR_RETURN(
       auto output_packets,
       ProcessVideoData(
           {{kImageInStreamName,
@@ -277,10 +268,7 @@ absl::StatusOr<PoseLandmarkerResult> PoseLandmarker::DetectForVideo(
           .Get<std::vector<mediapipe::NormalizedLandmarkList>>(),
       /* pose_world_landmarks */
       output_packets[kPoseWorldLandmarksStreamName]
-          .Get<std::vector<mediapipe::LandmarkList>>(),
-      /* pose_auxiliary_landmarks= */
-      output_packets[kPoseAuxiliaryLandmarksStreamName]
-          .Get<std::vector<mediapipe::NormalizedLandmarkList>>());
+          .Get<std::vector<mediapipe::LandmarkList>>());
 }
 
 absl::Status PoseLandmarker::DetectAsync(
@@ -292,9 +280,9 @@ absl::Status PoseLandmarker::DetectAsync(
         absl::StrCat("GPU input images are currently not supported."),
         MediaPipeTasksStatus::kRunnerUnexpectedInputError);
   }
-  ASSIGN_OR_RETURN(NormalizedRect norm_rect,
-                   ConvertToNormalizedRect(image_processing_options, image,
-                                           /*roi_allowed=*/false));
+  MP_ASSIGN_OR_RETURN(NormalizedRect norm_rect,
+                      ConvertToNormalizedRect(image_processing_options, image,
+                                              /*roi_allowed=*/false));
   return SendLiveStreamData(
       {{kImageInStreamName,
         MakePacket<Image>(std::move(image))

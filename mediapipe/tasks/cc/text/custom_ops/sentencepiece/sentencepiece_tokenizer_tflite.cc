@@ -1,4 +1,4 @@
-/* Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2023 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@ limitations under the License.
 ==============================================================================*/
 
 #include "mediapipe/tasks/cc/text/custom_ops/sentencepiece/sentencepiece_tokenizer_tflite.h"
+
+#include <cstdint>
 
 #include "flatbuffers/flexbuffers.h"
 #include "mediapipe/tasks/cc/text/custom_ops/sentencepiece/optimized_encoder.h"
@@ -85,8 +87,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       context->tensors[node->inputs->data[kReverseInput]];
   const bool reverse = reverse_tensor.data.b[0];
 
-  std::vector<int32> encoded;
-  std::vector<int32> splits;
+  std::vector<int32_t> encoded;
+  std::vector<int32_t> splits;
   const int num_strings = tflite::GetStringCount(&input_text);
   for (int i = 0; i < num_strings; ++i) {
     const auto strref = tflite::GetString(&input_text, i);

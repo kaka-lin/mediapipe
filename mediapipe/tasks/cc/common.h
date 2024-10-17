@@ -1,4 +1,4 @@
-/* Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2022 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ namespace tasks {
 
 // Name (aka type URL key) of the `absl::Status` payload which contains a
 // stringified `MediaPipeTasksStatus` code (see below).
-constexpr absl::string_view kMediaPipeTasksPayload = "MediaPipeTasksStatus";
+inline constexpr absl::string_view kMediaPipeTasksPayload =
+    "MediaPipeTasksStatus";
 
 // Error codes for MediaPipe Tasks C++ APIs.
 //

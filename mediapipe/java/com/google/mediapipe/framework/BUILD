@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_java//java:defs.bzl", "java_library")
+
 licenses(["notice"])
 
 # MediaPipe Android framework.
@@ -50,7 +52,6 @@ android_library(
         "MediaPipeRunner.java",
     ],
     visibility = [
-        "//java/com/google/android/libraries/camera/effects:__subpackages__",
         "//mediapipe/java/com/google/mediapipe:__subpackages__",
     ],
     exports = [

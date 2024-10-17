@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,5 +21,9 @@ licenses(["notice"])
 py_test(
     name = "audio_record_test",
     srcs = ["audio_record_test.py"],
-    deps = ["//mediapipe/tasks/python/audio/core:audio_record"],
+    deps = [
+        "//mediapipe/tasks/python/audio/core:audio_record",
+        "@mediapipe_pip_deps_absl_py//:pkg",
+        "@mediapipe_pip_deps_numpy//:pkg",
+    ],
 )

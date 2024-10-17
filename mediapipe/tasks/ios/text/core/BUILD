@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,5 +24,8 @@ objc_library(
         "-ObjC++",
         "-std=c++17",
     ],
-    deps = ["//mediapipe/tasks/ios/core:MPPTaskRunner"],
+    deps = [
+        "//mediapipe/tasks/ios/core:MPPTaskInfo",
+        "//mediapipe/tasks/ios/core:MPPTaskRunner",
+    ],
 )

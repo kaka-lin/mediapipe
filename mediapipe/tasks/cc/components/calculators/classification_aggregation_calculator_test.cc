@@ -1,4 +1,4 @@
-/* Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2022 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -98,13 +98,13 @@ class ClassificationAggregationCalculatorTest : public tflite::testing::Test {
 
     MP_RETURN_IF_ERROR(calculator_graph_.Initialize(graph.GetConfig()));
     if (connect_timestamps) {
-      ASSIGN_OR_RETURN(auto poller, calculator_graph_.AddOutputStreamPoller(
-                                        kTimestampedClassificationsName));
+      MP_ASSIGN_OR_RETURN(auto poller, calculator_graph_.AddOutputStreamPoller(
+                                           kTimestampedClassificationsName));
       MP_RETURN_IF_ERROR(calculator_graph_.StartRun(/*extra_side_packets=*/{}));
       return poller;
     }
-    ASSIGN_OR_RETURN(auto poller, calculator_graph_.AddOutputStreamPoller(
-                                      kClassificationsName));
+    MP_ASSIGN_OR_RETURN(auto poller, calculator_graph_.AddOutputStreamPoller(
+                                         kClassificationsName));
     MP_RETURN_IF_ERROR(calculator_graph_.StartRun(/*extra_side_packets=*/{}));
     return poller;
   }

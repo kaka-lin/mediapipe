@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ class InteractiveSegmenterOptions:
 
   @doc_controls.do_not_generate_docs
   def to_pb2(self) -> _ImageSegmenterGraphOptionsProto:
-    """Generates an InteractiveSegmenterOptions protobuf object."""
+    """Generates an ImageSegmenterGraphOptions protobuf object."""
     base_options_proto = self.base_options.to_pb2()
     base_options_proto.use_stream_mode = False
     segmenter_options_proto = _SegmenterOptionsProto()

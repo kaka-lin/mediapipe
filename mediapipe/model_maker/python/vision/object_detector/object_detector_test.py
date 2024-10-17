@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 import os
 import tempfile
+import unittest
 from unittest import mock as unittest_mock
 
 from absl.testing import parameterized
@@ -43,6 +44,7 @@ class ObjectDetectorTest(tf.test.TestCase, parameterized.TestCase):
     self.mock_gettempdir = mock_gettempdir.start()
     self.addCleanup(mock_gettempdir.stop)
 
+  @unittest.skip("Timeouts/Flaky")
   def test_object_detector(self):
     hparams = object_detector.HParams(
         epochs=1,

@@ -1,4 +1,4 @@
-/* Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2023 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -264,10 +264,10 @@ Stream<ClassificationList> ConvertTensorToBlendshapes(
 class FaceBlendshapesGraph : public core::ModelTaskGraph {
  public:
   absl::StatusOr<CalculatorGraphConfig> GetConfig(SubgraphContext* sc) {
-    ASSIGN_OR_RETURN(const auto* model_resources,
-                     CreateModelResources<FaceBlendshapesGraphOptions>(sc));
+    MP_ASSIGN_OR_RETURN(const auto* model_resources,
+                        CreateModelResources<FaceBlendshapesGraphOptions>(sc));
     Graph graph;
-    ASSIGN_OR_RETURN(
+    MP_ASSIGN_OR_RETURN(
         auto face_blendshapes_outs,
         BuildFaceBlendshapesSubgraph(
             sc->Options<FaceBlendshapesGraphOptions>(), *model_resources,

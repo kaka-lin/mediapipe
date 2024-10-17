@@ -1,4 +1,4 @@
-/* Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2022 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -59,14 +59,14 @@ absl::Status ModelAssetBundleResources::ExtractFilesFromExternalFileProto() {
   if (model_asset_bundle_file_->has_file_name()) {
     // If the model asset bundle file name is a relative path, searches the file
     // in a platform-specific location and returns the absolute path on success.
-    ASSIGN_OR_RETURN(
+    MP_ASSIGN_OR_RETURN(
         std::string path_to_resource,
         mediapipe::PathToResourceAsFile(model_asset_bundle_file_->file_name()));
     model_asset_bundle_file_->set_file_name(path_to_resource);
   }
-  ASSIGN_OR_RETURN(model_asset_bundle_file_handler_,
-                   ExternalFileHandler::CreateFromExternalFile(
-                       model_asset_bundle_file_.get()));
+  MP_ASSIGN_OR_RETURN(model_asset_bundle_file_handler_,
+                      ExternalFileHandler::CreateFromExternalFile(
+                          model_asset_bundle_file_.get()));
   const char* buffer_data =
       model_asset_bundle_file_handler_->GetFileContent().data();
   size_t buffer_size =

@@ -22,6 +22,7 @@ py_test(
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_info",
         "//mediapipe/tasks/python/test:test_utils",
         "@flatbuffers//:runtime_py",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )
 
@@ -37,6 +38,7 @@ py_test(
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_info",
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )
 
@@ -53,6 +55,7 @@ py_test(
         "//mediapipe/tasks/python/metadata/metadata_writers:image_classifier",
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )
 
@@ -67,13 +70,17 @@ py_test(
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/metadata/metadata_writers:text_classifier",
         "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )
 
 py_test(
     name = "model_asset_bundle_utils_test",
     srcs = ["model_asset_bundle_utils_test.py"],
-    deps = ["//mediapipe/tasks/python/metadata/metadata_writers:model_asset_bundle_utils"],
+    deps = [
+        "//mediapipe/tasks/python/metadata/metadata_writers:model_asset_bundle_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
+    ],
 )
 
 py_test(
@@ -86,9 +93,11 @@ py_test(
     deps = [
         "//mediapipe/tasks/metadata:metadata_schema_py",
         "//mediapipe/tasks/python/metadata",
+        "//mediapipe/tasks/python/metadata/metadata_writers:metadata_info",
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/metadata/metadata_writers:object_detector",
         "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )
 
@@ -104,5 +113,20 @@ py_test(
         "//mediapipe/tasks/python/metadata/metadata_writers:image_segmenter",
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
+    ],
+)
+
+py_test(
+    name = "face_stylizer_test",
+    srcs = ["face_stylizer_test.py"],
+    data = [
+        "//mediapipe/tasks/testdata/metadata:data_files",
+        "//mediapipe/tasks/testdata/metadata:model_files",
+    ],
+    deps = [
+        "//mediapipe/tasks/python/metadata/metadata_writers:face_stylizer",
+        "//mediapipe/tasks/python/test:test_utils",
+        "@mediapipe_pip_deps_absl_py//:pkg",
     ],
 )

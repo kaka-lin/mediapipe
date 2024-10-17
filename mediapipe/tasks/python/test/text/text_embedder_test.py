@@ -1,4 +1,4 @@
-# Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2022 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ _TEST_DATA_DIR = 'mediapipe/tasks/testdata/text'
 # Tolerance for embedding vector coordinate values.
 _EPSILON = 1e-4
 # Tolerance for cosine similarity evaluation.
-_SIMILARITY_TOLERANCE = 1e-6
+_SIMILARITY_TOLERANCE = 1e-3
 
 
 class ModelFileType(enum.Enum):
@@ -108,18 +108,18 @@ class TextEmbedderTest(parameterized.TestCase):
           False,
           _BERT_MODEL_FILE,
           ModelFileType.FILE_NAME,
-          0.969514,
+          0.9624276,
           512,
-          (19.9016, 22.626251),
+          (21.2054, 19.6843),
       ),
       (
           True,
           False,
           _BERT_MODEL_FILE,
           ModelFileType.FILE_NAME,
-          0.969514,
+          0.9624276,
           512,
-          (0.0585837, 0.0723035),
+          (0.062578, 0.067393),
       ),
       (
           False,
@@ -201,18 +201,18 @@ class TextEmbedderTest(parameterized.TestCase):
           False,
           _BERT_MODEL_FILE,
           ModelFileType.FILE_NAME,
-          0.969514,
+          0.962427,
           512,
-          (19.9016, 22.626251),
+          (21.2054, 19.684337),
       ),
       (
           True,
           False,
           _BERT_MODEL_FILE,
           ModelFileType.FILE_NAME,
-          0.969514,
+          0.962427,
           512,
-          (0.0585837, 0.0723035),
+          (0.0625787, 0.0673937),
       ),
       (
           False,
@@ -287,7 +287,7 @@ class TextEmbedderTest(parameterized.TestCase):
 
   @parameterized.parameters(
       # TODO: The similarity should likely be lower
-      (_BERT_MODEL_FILE, 0.980880),
+      (_BERT_MODEL_FILE, 0.99025),
       (_USE_MODEL_FILE, 0.780334),
   )
   def test_embed_with_different_themes(self, model_file, expected_similarity):

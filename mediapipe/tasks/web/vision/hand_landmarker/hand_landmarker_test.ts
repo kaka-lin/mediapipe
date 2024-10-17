@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+ * Copyright 2022 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import {HandLandmarkerOptions} from './hand_landmarker_options';
 
 type ProtoListener = ((binaryProtos: Uint8Array[], timestamp: number) => void);
 
-function createHandednesses(): ClassificationList {
+function createHandedness(): ClassificationList {
   const handsProto = new ClassificationList();
   const classification = new Classification();
   classification.setScore(0.1);
@@ -81,6 +81,10 @@ describe('HandLandmarker', () => {
     handLandmarker = new HandLandmarkerFake();
     await handLandmarker.setOptions(
         {baseOptions: {modelAssetBuffer: new Uint8Array([])}});
+  });
+
+  afterEach(() => {
+    handLandmarker.close();
   });
 
   it('initializes graph', async () => {
@@ -194,7 +198,7 @@ describe('HandLandmarker', () => {
   it('transforms results', async () => {
     const landmarksProto = [createLandmarks().serializeBinary()];
     const worldLandmarksProto = [createWorldLandmarks().serializeBinary()];
-    const handednessProto = [createHandednesses().serializeBinary()];
+    const handednessProto = [createHandedness().serializeBinary()];
 
     // Pass the test data to our listener
     handLandmarker.fakeWasmModule._waitUntilIdle.and.callFake(() => {
@@ -214,8 +218,14 @@ describe('HandLandmarker', () => {
     expect(handLandmarker.fakeWasmModule._waitUntilIdle).toHaveBeenCalled();
 
     expect(landmarks).toEqual({
-      'landmarks': [[{'x': 0, 'y': 0, 'z': 0}]],
-      'worldLandmarks': [[{'x': 0, 'y': 0, 'z': 0}]],
+      'landmarks': [[{'x': 0, 'y': 0, 'z': 0, 'visibility': 0}]],
+      'worldLandmarks': [[{'x': 0, 'y': 0, 'z': 0, 'visibility': 0}]],
+      'handedness': [[{
+        'score': 0.1,
+        'index': 1,
+        'categoryName': 'handedness_label',
+        'displayName': 'handedness_display_name'
+      }]],
       'handednesses': [[{
         'score': 0.1,
         'index': 1,
@@ -228,7 +238,7 @@ describe('HandLandmarker', () => {
   it('clears results between invoations', async () => {
     const landmarks = [createLandmarks().serializeBinary()];
     const worldLandmarks = [createWorldLandmarks().serializeBinary()];
-    const handedness = [createHandednesses().serializeBinary()];
+    const handedness = [createHandedness().serializeBinary()];
 
     // Pass the test data to our listener
     handLandmarker.fakeWasmModule._waitUntilIdle.and.callFake(() => {

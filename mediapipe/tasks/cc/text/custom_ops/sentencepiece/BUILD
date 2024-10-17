@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ cc_library(
         ":sentencepiece_constants",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/status:statusor",
-        "@com_google_sentencepiece//src:sentencepiece_model_cc_proto",
+        "@com_google_sentencepiece//:sentencepiece_model_cc_proto",
     ],
 )
 
@@ -165,8 +165,8 @@ cc_test(
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
-        "@com_google_sentencepiece//src:sentencepiece_cc_proto",
-        "@com_google_sentencepiece//src:sentencepiece_processor",
+        "@com_google_sentencepiece//:sentencepiece_cc_proto",
+        "@com_google_sentencepiece//:sentencepiece_processor",
         "@org_tensorflow//tensorflow/core:lib",
     ],
 )

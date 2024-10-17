@@ -1,4 +1,4 @@
-/* Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2023 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ limitations under the License.
 #include "mediapipe/tasks/cc/text/custom_ops/sentencepiece/double_array_trie_builder.h"
 #include "mediapipe/tasks/cc/text/custom_ops/sentencepiece/encoder_config_generated.h"
 #include "mediapipe/tasks/cc/text/custom_ops/sentencepiece/model_converter.h"
-#include "src/sentencepiece.pb.h"
-#include "src/sentencepiece_processor.h"
+#include "sentencepiece/src/sentencepiece.pb.h"  // from @com_google_sentencepiece
+#include "sentencepiece/src/sentencepiece_processor.h"  // from @com_google_sentencepiece
 #include "tensorflow/core/platform/env.h"
 
 namespace mediapipe::tflite_operations::sentencepiece {

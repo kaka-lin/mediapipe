@@ -18,9 +18,11 @@
 #ifndef MEDIAPIPE_GPU_GL_TEXTURE_BUFFER_H_
 #define MEDIAPIPE_GPU_GL_TEXTURE_BUFFER_H_
 
-#include <atomic>
+#include <functional>
+#include <memory>
 
-#include "absl/memory/memory.h"
+#include "absl/base/thread_annotations.h"
+#include "absl/synchronization/mutex.h"
 #include "mediapipe/framework/formats/image_frame.h"
 #include "mediapipe/gpu/gl_base.h"
 #include "mediapipe/gpu/gl_context.h"
@@ -91,9 +93,9 @@ class GlTextureBuffer
   // TODO: turn into a single call?
   GLuint name() const { return name_; }
   GLenum target() const { return target_; }
-  int width() const { return width_; }
-  int height() const { return height_; }
-  GpuBufferFormat format() const { return format_; }
+  int width() const override { return width_; }
+  int height() const override { return height_; }
+  GpuBufferFormat format() const override { return format_; }
 
   GlTextureView GetReadView(internal::types<GlTextureView>,
                             int plane) const override;
@@ -168,7 +170,7 @@ class GlTextureBuffer
   // Tokens tracking the point when consumers finished using this texture.
   mutable std::unique_ptr<GlMultiSyncPoint> consumer_multi_sync_
       ABSL_GUARDED_BY(consumer_sync_mutex_) =
-          absl::make_unique<GlMultiSyncPoint>();
+          std::make_unique<GlMultiSyncPoint>();
   DeletionCallback deletion_callback_;
   std::shared_ptr<GlContext> producer_context_;
 };

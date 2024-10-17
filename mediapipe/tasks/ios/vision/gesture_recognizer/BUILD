@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ objc_library(
         "//mediapipe/tasks/ios/components/containers:MPPCategory",
         "//mediapipe/tasks/ios/components/containers:MPPLandmark",
         "//mediapipe/tasks/ios/core:MPPTaskResult",
+        "//third_party/apple_frameworks:Foundation",
     ],
 )
 
@@ -36,5 +37,32 @@ objc_library(
         "//mediapipe/tasks/ios/components/processors:MPPClassifierOptions",
         "//mediapipe/tasks/ios/core:MPPTaskOptions",
         "//mediapipe/tasks/ios/vision/core:MPPRunningMode",
+        "//third_party/apple_frameworks:Foundation",
+    ],
+)
+
+objc_library(
+    name = "MPPGestureRecognizer",
+    srcs = ["sources/MPPGestureRecognizer.mm"],
+    hdrs = ["sources/MPPGestureRecognizer.h"],
+    copts = [
+        "-ObjC++",
+        "-std=c++17",
+        "-x objective-c++",
+    ],
+    module_name = "MPPGestureRecognizer",
+    deps = [
+        ":MPPGestureRecognizerOptions",
+        ":MPPGestureRecognizerResult",
+        "//mediapipe/tasks/cc/vision/gesture_recognizer:gesture_recognizer_graph",
+        "//mediapipe/tasks/ios/common/utils:MPPCommonUtils",
+        "//mediapipe/tasks/ios/common/utils:NSStringHelpers",
+        "//mediapipe/tasks/ios/core:MPPTaskInfo",
+        "//mediapipe/tasks/ios/vision/core:MPPImage",
+        "//mediapipe/tasks/ios/vision/core:MPPVisionPacketCreator",
+        "//mediapipe/tasks/ios/vision/core:MPPVisionTaskRunner",
+        "//mediapipe/tasks/ios/vision/gesture_recognizer/utils:MPPGestureRecognizerOptionsHelpers",
+        "//mediapipe/tasks/ios/vision/gesture_recognizer/utils:MPPGestureRecognizerResultHelpers",
+        "//third_party/apple_frameworks:Foundation",
     ],
 )

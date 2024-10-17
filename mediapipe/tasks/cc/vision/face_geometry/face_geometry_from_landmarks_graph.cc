@@ -1,4 +1,4 @@
-/* Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+/* Copyright 2023 The MediaPipe Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -122,13 +122,13 @@ class FaceGeometryFromLandmarksGraph : public Subgraph {
       environment = std::make_optional<>(
           graph.SideIn(kEnvironmentTag).Cast<Environment>());
     }
-    ASSIGN_OR_RETURN(auto outs,
-                     BuildFaceGeometryFromLandmarksGraph(
-                         *sc->MutableOptions<proto::FaceGeometryGraphOptions>(),
-                         graph.In(kFaceLandmarksTag)
-                             .Cast<std::vector<NormalizedLandmarkList>>(),
-                         graph.In(kImageSizeTag).Cast<std::pair<int, int>>(),
-                         environment, graph));
+    MP_ASSIGN_OR_RETURN(
+        auto outs, BuildFaceGeometryFromLandmarksGraph(
+                       *sc->MutableOptions<proto::FaceGeometryGraphOptions>(),
+                       graph.In(kFaceLandmarksTag)
+                           .Cast<std::vector<NormalizedLandmarkList>>(),
+                       graph.In(kImageSizeTag).Cast<std::pair<int, int>>(),
+                       environment, graph));
     outs.multi_face_geometry >>
         graph.Out(kFaceGeometryTag).Cast<std::vector<FaceGeometry>>();
     return graph.GetConfig();

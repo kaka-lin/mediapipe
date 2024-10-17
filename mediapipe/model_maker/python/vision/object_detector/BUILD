@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Placeholder for internal Python strict library and test compatibility macro.
+# Placeholder for internal Python strict binary and library compatibility macro.
 # Placeholder for internal Python strict test compatibility macro.
 
 licenses(["notice"])
 
-package(
-    default_visibility = ["//mediapipe:__subpackages__"],
-)
+package(default_visibility = ["//mediapipe:__subpackages__"])
 
 py_library(
     name = "object_detector_import",
@@ -41,7 +39,10 @@ py_binary(
     data = [":testdata"],
     python_version = "PY3",
     tags = ["requires-net:external"],
-    deps = [":object_detector_import"],
+    deps = [
+        ":object_detector_import",
+        "@model_maker_pip_deps_absl_py//:pkg",
+    ],
 )
 
 filegroup(
@@ -56,7 +57,10 @@ py_library(
     srcs = ["dataset.py"],
     deps = [
         ":dataset_util",
+        "//mediapipe/model_maker/python/core/data:cache_files",
         "//mediapipe/model_maker/python/core/data:classification_dataset",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
     ],
 )
 
@@ -69,12 +73,18 @@ py_test(
         "//mediapipe/model_maker/python/vision/core:image_utils",
         "//mediapipe/model_maker/python/vision/core:test_utils",
         "//mediapipe/tasks/python/test:test_utils",
+        "@model_maker_pip_deps_tensorflow//:pkg",
     ],
 )
 
 py_library(
     name = "dataset_util",
     srcs = ["dataset_util.py"],
+    deps = [
+        "//mediapipe/model_maker/python/core/data:cache_files",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
+    ],
 )
 
 py_test(
@@ -85,6 +95,25 @@ py_test(
         ":dataset_util",
         "//mediapipe/model_maker/python/vision/core:test_utils",
         "//mediapipe/tasks/python/test:test_utils",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+    ],
+)
+
+py_library(
+    name = "detection",
+    srcs = ["detection.py"],
+    deps = [
+        "@model_maker_pip_deps_tf_models_official//:pkg",
+    ],
+)
+
+py_test(
+    name = "detection_test",
+    srcs = ["detection_test.py"],
+    deps = [
+        ":detection",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
     ],
 )
 
@@ -99,7 +128,11 @@ py_library(
 py_library(
     name = "preprocessor",
     srcs = ["preprocessor.py"],
-    deps = [":model_spec"],
+    deps = [
+        ":model_spec",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
+    ],
 )
 
 py_test(
@@ -109,6 +142,8 @@ py_test(
         ":model_spec",
         ":preprocessor",
         "//mediapipe/model_maker/python/vision/core:test_utils",
+        "@model_maker_pip_deps_absl_py//:pkg",
+        "@model_maker_pip_deps_tensorflow//:pkg",
     ],
 )
 
@@ -116,8 +151,11 @@ py_library(
     name = "model",
     srcs = ["model.py"],
     deps = [
+        ":detection",
         ":model_options",
         ":model_spec",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
     ],
 )
 
@@ -127,7 +165,12 @@ py_test(
     srcs = ["model_test.py"],
     data = [":testdata"],
     shard_count = 4,
-    tags = ["requires-net:external"],
+    tags = [
+        "noasan",  # TODO b/352507058 - ASAN, TSAN and MSAN tests take 15-25 minutes.
+        "nomsan",
+        "notsan",
+        "requires-net:external",
+    ],
     deps = [
         ":dataset",
         ":model",
@@ -135,6 +178,8 @@ py_test(
         ":model_spec",
         ":preprocessor",
         "//mediapipe/tasks/python/test:test_utils",
+        "@model_maker_pip_deps_numpy//:pkg",
+        "@model_maker_pip_deps_tensorflow//:pkg",
     ],
 )
 
@@ -163,8 +208,11 @@ py_library(
         "//mediapipe/model_maker/python/core/tasks:classifier",
         "//mediapipe/model_maker/python/core/utils:model_util",
         "//mediapipe/model_maker/python/core/utils:quantization",
+        "//mediapipe/tasks/python/metadata/metadata_writers:metadata_info",
         "//mediapipe/tasks/python/metadata/metadata_writers:metadata_writer",
         "//mediapipe/tasks/python/metadata/metadata_writers:object_detector",
+        "@model_maker_pip_deps_tensorflow//:pkg",
+        "@model_maker_pip_deps_tf_models_official//:pkg",
     ],
 )
 
@@ -177,6 +225,8 @@ py_test(
     deps = [
         ":object_detector_import",
         "//mediapipe/tasks/python/test:test_utils",
+        "@model_maker_pip_deps_absl_py//:pkg",
+        "@model_maker_pip_deps_tensorflow//:pkg",
     ],
 )
 

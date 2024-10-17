@@ -1,4 +1,4 @@
-# Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+# Copyright 2023 The MediaPipe Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ objc_library(
     deps = [
         "//mediapipe/tasks/ios/components/containers:MPPClassificationResult",
         "//mediapipe/tasks/ios/core:MPPTaskResult",
+        "//third_party/apple_frameworks:Foundation",
     ],
 )
 
@@ -34,6 +35,7 @@ objc_library(
         ":MPPImageClassifierResult",
         "//mediapipe/tasks/ios/core:MPPTaskOptions",
         "//mediapipe/tasks/ios/vision/core:MPPRunningMode",
+        "//third_party/apple_frameworks:Foundation",
     ],
 )
 
@@ -55,11 +57,11 @@ objc_library(
         "//mediapipe/tasks/ios/common/utils:MPPCommonUtils",
         "//mediapipe/tasks/ios/common/utils:NSStringHelpers",
         "//mediapipe/tasks/ios/core:MPPTaskInfo",
-        "//mediapipe/tasks/ios/core:MPPTaskOptions",
         "//mediapipe/tasks/ios/vision/core:MPPImage",
         "//mediapipe/tasks/ios/vision/core:MPPVisionPacketCreator",
         "//mediapipe/tasks/ios/vision/core:MPPVisionTaskRunner",
         "//mediapipe/tasks/ios/vision/image_classifier/utils:MPPImageClassifierOptionsHelpers",
         "//mediapipe/tasks/ios/vision/image_classifier/utils:MPPImageClassifierResultHelpers",
+        "//third_party/apple_frameworks:Foundation",
     ],
 )

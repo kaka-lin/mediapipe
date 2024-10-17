@@ -1,5 +1,5 @@
 /**
- * Copyright 2023 The MediaPipe Authors. All Rights Reserved.
+ * Copyright 2023 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,10 @@ describe('FaceLandmarker', () => {
     faceLandmarker = new FaceLandmarkerFake();
     await faceLandmarker.setOptions(
         {baseOptions: {modelAssetBuffer: new Uint8Array([])}});
+  });
+
+  afterEach(() => {
+    faceLandmarker.close();
   });
 
   it('initializes graph', async () => {
@@ -260,7 +264,7 @@ describe('FaceLandmarker', () => {
     expect(faceLandmarker.fakeWasmModule._waitUntilIdle).toHaveBeenCalled();
 
     expect(landmarks).toEqual({
-      faceLandmarks: [[{x: 0, y: 0, z: 0}]],
+      faceLandmarks: [[{x: 0, y: 0, z: 0, visibility: 0}]],
       faceBlendshapes: [{
         categories: [{
           index: 1,

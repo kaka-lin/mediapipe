@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 The MediaPipe Authors. All Rights Reserved.
+ * Copyright 2022 The MediaPipe Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ function convertFromEmbeddingsProto(source: EmbeddingProto): Embedding {
   };
 
   if (source.hasFloatEmbedding()) {
-    embedding.floatEmbedding = source.getFloatEmbedding()!.getValuesList();
+    embedding.floatEmbedding =
+        source.getFloatEmbedding()!.getValuesList().slice();
   } else {
       const encodedValue = source.getQuantizedEmbedding()?.getValues() ?? '';
       embedding.quantizedEmbedding = typeof encodedValue == 'string' ?
