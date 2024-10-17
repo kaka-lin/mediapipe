@@ -156,92 +156,6 @@ http_archive(
     patch_args = [
         "-p1",
     ],
-    strip_prefix = "ceres-solver-123fba61cf2611a3c8bddc9d91416db26b10b558",
-    sha256 = "8b7b16ceb363420e0fd499576daf73fa338adb0b1449f58bea7862766baa1ac7"
-)
-
-http_archive(
-    name = "opencv",
-    build_file_content = all_content,
-    strip_prefix = "opencv-3.4.10",
-    urls = ["https://github.com/opencv/opencv/archive/3.4.10.tar.gz"],
-)
-
-new_local_repository(
-    name = "linux_opencv",
-    build_file = "@//third_party:opencv_linux.BUILD",
-    path = "/usr",
-)
-
-new_local_repository(
-    name = "linux_ffmpeg",
-    build_file = "@//third_party:ffmpeg_linux.BUILD",
-    path = "/usr"
-)
-
-new_local_repository(
-    name = "macos_opencv",
-    build_file = "@//third_party:opencv_macos.BUILD",
-    # For local MacOS builds, the path should point to an opencv@3 installation.
-    # If you edit the path here, you will also need to update the corresponding
-    # prefix in "opencv_macos.BUILD".
-    path = "/opt/opencv",  # e.g. /usr/local/Cellar for HomeBrew
-)
-
-new_local_repository(
-    name = "macos_ffmpeg",
-    build_file = "@//third_party:ffmpeg_macos.BUILD",
-    path = "/opt/homebrew",
-)
-
-new_local_repository(
-    name = "windows_opencv",
-    build_file = "@//third_party:opencv_windows.BUILD",
-    path = "C:\\opencv\\build",
-)
-
-http_archive(
-    name = "android_opencv",
-    build_file = "@//third_party:opencv_android.BUILD",
-    strip_prefix = "OpenCV-android-sdk",
-    type = "zip",
-    url = "https://github.com/opencv/opencv/releases/download/3.4.3/opencv-3.4.3-android-sdk.zip",
-)
-
-# After OpenCV 3.2.0, the pre-compiled opencv2.framework has google protobuf symbols, which will
-# trigger duplicate symbol errors in the linking stage of building a mediapipe ios app.
-# To get a higher version of OpenCV for iOS, opencv2.framework needs to be built from source with
-# '-DBUILD_PROTOBUF=OFF -DBUILD_opencv_dnn=OFF'.
-http_archive(
-    name = "ios_opencv",
-    sha256 = "7dd536d06f59e6e1156b546bd581523d8df92ce83440002885ec5abc06558de2",
-    build_file = "@//third_party:opencv_ios.BUILD",
-    type = "zip",
-    url = "https://github.com/opencv/opencv/releases/download/3.2.0/opencv-3.2.0-ios-framework.zip",
-)
-
-http_archive(
-    name = "stblib",
-    strip_prefix = "stb-b42009b3b9d4ca35bc703f5310eedc74f584be58",
-    sha256 = "13a99ad430e930907f5611325ec384168a958bf7610e63e60e2fd8e7b7379610",
-    urls = ["https://github.com/nothings/stb/archive/b42009b3b9d4ca35bc703f5310eedc74f584be58.tar.gz"],
-    build_file = "@//third_party:stblib.BUILD",
-    patches = [
-        "@//third_party:stb_image_impl.diff"
-    ],
-    patch_args = [
-        "-p1",
-    ],
-)
-
-# More iOS deps.
-
-http_archive(
-    name = "google_toolbox_for_mac",
-    url = "https://github.com/google/google-toolbox-for-mac/archive/v2.2.1.zip",
-    sha256 = "e3ac053813c989a88703556df4dc4466e424e30d32108433ed6beaec76ba4fdc",
-    strip_prefix = "google-toolbox-for-mac-2.2.1",
-    build_file = "@//third_party:google_toolbox_for_mac.BUILD",
 )
 
 # Maven dependencies.
@@ -386,6 +300,7 @@ python_init_repositories(
     default_python_version = "system",
     local_wheel_dist_folder = "dist",
     requirements = {
+        "3.8": "//:requirements_lock_3_8.txt",
         "3.9": "//:requirements_lock.txt",
         "3.10": "//:requirements_lock_3_10.txt",
         "3.11": "//:requirements_lock_3_11.txt",
@@ -632,13 +547,13 @@ new_local_repository(
     # For local MacOS builds, the path should point to an opencv@3 installation.
     # If you edit the path here, you will also need to update the corresponding
     # prefix in "opencv_macos.BUILD".
-    path = "/usr/local",  # e.g. /usr/local/Cellar for HomeBrew
+    path = "/opt/opencv",  # e.g. /usr/local/Cellar for HomeBrew
 )
 
 new_local_repository(
     name = "macos_ffmpeg",
     build_file = "@//third_party:ffmpeg_macos.BUILD",
-    path = "/usr/local/opt/ffmpeg",
+    path = "/opt/homebrew",
 )
 
 new_local_repository(
@@ -841,15 +756,6 @@ http_archive(
     build_file = "@//third_party:halide.BUILD",
 )
 
-android_sdk_repository(
-    name = "androidsdk",
-    path = "/Users/kaka/Library/Android/sdk"
-)
-
-android_ndk_repository(
-    name = "androidndk",
-    api_level = 26,
-    path = "/Users/kaka/Library/Android/sdk/ndk/21.4.7075529"
 http_archive(
     name = "pybind11_abseil",
     sha256 = "0223b647b8cc817336a51e787980ebc299c8d5e64c069829bf34b69d72337449",
