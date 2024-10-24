@@ -40,7 +40,7 @@ absl::Status RunMPPGraph() {
   MP_RETURN_IF_ERROR(graph.Initialize(config));
 
   // Output streams
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
+  MP_ASSIGN_OR_RETURN(OutputStreamPoller poller,
                    graph.AddOutputStreamPoller("output"));
 
   // Run the graph

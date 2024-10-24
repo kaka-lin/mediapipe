@@ -7,10 +7,7 @@ cc_binary(
         # This line is the same as below included in “#"
         # "//mediapipe/graphs/object_detection:desktop_tflite_calculators",
         ##########################################################################
-        "//mediapipe/calculators/core:concatenate_vector_calculator",   # not used
         "//mediapipe/calculators/core:flow_limiter_calculator",
-        "//mediapipe/calculators/core:previous_loopback_calculator",    # not used
-        "//mediapipe/calculators/core:split_vector_calculator",         # not used
         "//mediapipe/calculators/image:image_transformation_calculator",
         "//mediapipe/calculators/tflite:ssd_anchors_calculator",
         "//mediapipe/calculators/tflite:tflite_converter_calculator",
@@ -20,13 +17,11 @@ cc_binary(
         "//mediapipe/calculators/util:detection_label_id_to_text_calculator",
         "//mediapipe/calculators/util:detections_to_render_data_calculator",
         "//mediapipe/calculators/util:non_max_suppression_calculator",
-        "//mediapipe/calculators/video:opencv_video_decoder_calculator", # not used
-        "//mediapipe/calculators/video:opencv_video_encoder_calculator", # not used
         ##########################################################################
-
         "//mediapipe/framework:calculator_framework",
         "//mediapipe/framework/formats:image_frame",
         "//mediapipe/framework/formats:image_frame_opencv",
+        "//mediapipe/framework/port:opencv_core",
         "//mediapipe/framework/port:opencv_highgui",
         "//mediapipe/framework/port:opencv_imgproc",
         "//mediapipe/framework/port:parse_text_proto",

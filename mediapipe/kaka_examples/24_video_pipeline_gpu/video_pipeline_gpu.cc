@@ -54,14 +54,14 @@ absl::Status VideoPipeline() {
 
   // Initialize GPU
   LOG(INFO) << "Initialize the GPU.";
-  ASSIGN_OR_RETURN(auto gpu_resources, mediapipe::GpuResources::Create());
+  MP_ASSIGN_OR_RETURN(auto gpu_resources, mediapipe::GpuResources::Create());
   MP_RETURN_IF_ERROR(graph.SetGpuResources(std::move(gpu_resources)));
   mediapipe::GlCalculatorHelper gpu_helper;
   gpu_helper.InitializeForTest(graph.GetGpuResources().get());
 
   // Output packets
   LOG(INFO) << "Start running the calculator graph.";
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
+  MP_ASSIGN_OR_RETURN(OutputStreamPoller poller,
                    graph.AddOutputStreamPoller("output"));
 
   // Run the graph with `StartRun`,

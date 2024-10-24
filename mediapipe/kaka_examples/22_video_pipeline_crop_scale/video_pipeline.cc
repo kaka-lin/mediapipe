@@ -64,7 +64,7 @@ absl::Status VideoPipeline() {
 
   // Output packets
   LOG(INFO) << "Start running the calculator graph.";
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
+  MP_ASSIGN_OR_RETURN(OutputStreamPoller poller,
                    graph.AddOutputStreamPoller("output"));
 
   // Run the graph with `StartRun`,

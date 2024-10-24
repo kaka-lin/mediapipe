@@ -21,7 +21,12 @@ absl::Status ObjectDetection() {
   // Load the graph config from a file
   std::string graph_path("mediapipe/kaka_examples/31_object_detection_ssd/object_detection.pbtxt");
   std::string k_proto;
-  MP_RETURN_IF_ERROR(file::GetContents(graph_path, &k_proto));
+
+  MP_RETURN_IF_ERROR(mediapipe::file::GetContents(
+    absl::string_view(graph_path),
+    &k_proto));
+  ABSL_LOG(INFO) << "Get calculator graph config contents: "
+                 << k_proto;
 
   // parse it
   CalculatorGraphConfig config;
@@ -35,7 +40,7 @@ absl::Status ObjectDetection() {
 
   // Output Streams
   LOG(INFO) << "Start running the calculator graph.";
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
+  MP_ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
                    graph.AddOutputStreamPoller("output_video"));
 
   // Run the graph with `StartRun`,

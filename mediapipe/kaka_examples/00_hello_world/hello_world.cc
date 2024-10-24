@@ -41,7 +41,7 @@ absl::Status PrintHelloWorld() {
   // Create output stream "output"
   // OutputStreamPoller object is connected to the output stream
   // in order to later retrieve the graph output
-  ASSIGN_OR_RETURN(OutputStreamPoller poller,
+  MP_ASSIGN_OR_RETURN(OutputStreamPoller poller,
                    graph.AddOutputStreamPoller("output"));
 
   // Run the graph with `StartRun`,
