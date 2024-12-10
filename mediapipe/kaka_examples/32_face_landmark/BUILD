@@ -16,16 +16,21 @@ licenses(["notice"])
 
 package(default_visibility = ["//mediapipe/examples:__subpackages__"])
 
+
 cc_binary(
     name = "face_landmark_cpu",
     deps = [
         "//mediapipe/examples/desktop:demo_run_graph_main",
+        "//mediapipe/tasks/cc/vision/face_landmarker:face_landmarker_graph",
+
     ] + select({
         "//mediapipe/gpu:disable_gpu": [
             "//mediapipe/graphs/kaka_face_landmark:desktop_calculators",
         ],
         "//conditions:default": [
+            ":face_detector_proto",
             "//mediapipe/graphs/kaka_face_landmark:mobile_calculators",
         ],
     }),
 )
+

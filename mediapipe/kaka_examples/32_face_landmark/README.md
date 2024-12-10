@@ -9,5 +9,5 @@ $ bazel build --define MEDIAPIPE_DISABLE_GPU=1 \
 
 ```bash
 $ ./bazel-bin/mediapipe/kaka_examples/32_face_landmark/face_landmark_cpu \
-    --calculator_graph_config_file mediapipe/graphs/kaka_face_landmark/face_landmark_desktop_live.pbtxt
+    --calculator_graph_config_file mediapipe/graphs/kaka_face_landmark/face_landmark_desktop_live_2.pbtxt
 ```

@@ -1,0 +1,78 @@
+# MediaPipe graph that performs face mesh with TensorFlow Lite on CPU.
+
+# Input image. (ImageFrame)
+input_stream: "input_video"
+
+# Output image with rendered results. (ImageFrame)
+output_stream: "output_video"
+
+# Throttles the images flowing downstream for flow control. It passes through
+# the very first incoming image unaltered, and waits for downstream nodes
+# (calculators and subgraphs) in the graph to finish their tasks before it
+# passes through another image. All images that come in while waiting are
+# dropped, limiting the number of in-flight images in most part of the graph to
+# 1. This prevents the downstream nodes from queuing up incoming images and data
+# excessively, which leads to increased latency and memory usage, unwanted in
+# real-time mobile applications. It also eliminates unnecessarily computation,
+# e.g., the output produced by a node may get dropped downstream if the
+# subsequent nodes are still busy processing previous inputs.
+node {
+  calculator: "FlowLimiterCalculator"
+  input_stream: "input_video"
+  input_stream: "FINISHED:output_video"
+  input_stream_info: {
+    tag_index: "FINISHED"
+    back_edge: true
+  }
+  output_stream: "throttled_input_video"
+}
+
+# Gets image size.
+node {
+  calculator: "ImagePropertiesCalculator"
+  input_stream: "IMAGE:throttled_input_video"
+  output_stream: "SIZE:image_size"
+}
+
+node {
+  calculator: "ImageFrameToImageCalculator"
+  input_stream: "throttled_input_video"
+  output_stream: "throttled_input_image"
+}
+
+node {
+  calculator: "mediapipe.tasks.vision.face_landmarker.FaceLandmarkerGraph"
+  input_stream: "IMAGE:throttled_input_image"
+  output_stream: "NORM_LANDMARKS:face_landmarks"
+  output_stream: "BLENDSHAPES:face_blendshapes"
+  output_stream: "FACE_GEOMETRY:face_geometry"
+  output_stream: "FACE_RECTS_NEXT_FRAME:face_rects_next_frame"
+  output_stream: "FACE_RECTS:face_rects"
+  output_stream: "DETECTIONS:detections"
+  output_stream: "IMAGE:output_image_2"
+  options {
+    [mediapipe.tasks.vision.face_landmarker.proto.FaceLandmarkerGraphOptions.ext] {
+      base_options {
+         model_asset {
+           file_name: "mediapipe/models/face_landmarker.task"
+         }
+      }
+      face_detector_graph_options {
+        min_detection_confidence: 0.5
+        num_faces: 1
+      }
+      face_landmarks_detector_graph_options {
+        min_detection_confidence: 0.5
+      }
+    }
+  }
+}
+
+node {
+  calculator: "FaceRendererCpu"
+  input_stream: "IMAGE:throttled_input_video"
+  input_stream: "LANDMARKS:face_landmarks"
+  input_stream: "NORM_RECTS:face_rects"
+  input_stream: "DETECTIONS:detections"
+  output_stream: "IMAGE:output_video"
+}

@@ -321,7 +321,7 @@ class FaceLandmarkerGraph : public core::ModelTaskGraph {
       SubgraphContext* sc) override {
     Graph graph;
     bool output_geometry = HasOutput(sc->OriginalNode(), kFaceGeometryTag);
-    if (sc->Options<FaceLandmarkerGraphOptions>()
+      if (sc->Options<FaceLandmarkerGraphOptions>()
             .base_options()
             .has_model_asset()) {
       MP_ASSIGN_OR_RETURN(

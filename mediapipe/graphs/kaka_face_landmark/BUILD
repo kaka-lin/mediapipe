@@ -14,8 +14,7 @@
 
 load(
     "//mediapipe/framework/tool:mediapipe_graph.bzl",
-    "mediapipe_binary_graph",
-)
+    "mediapipe_binary_graph")
 
 licenses(["notice"])
 
@@ -29,21 +28,24 @@ cc_library(
         "//mediapipe/calculators/util:detections_to_render_data_calculator",
         "//mediapipe/gpu:gpu_buffer_to_image_frame_calculator",
         "//mediapipe/gpu:image_frame_to_gpu_buffer_calculator",
-        "//mediapipe/modules/face_detection:face_detection_short_range_cpu",
-        "//mediapipe/modules/face_detection:face_detection_short_range_gpu",
-        "//mediapipe/modules/face_detection:face_detection_full_range_cpu"
     ],
 )
 
 cc_library(
     name = "desktop_calculators",
+    copts = ["-std=c++11"], # 使用 C11 標準
     deps = [
         "//mediapipe/calculators/core:flow_limiter_calculator",
-        "//mediapipe/calculators/util:annotation_overlay_calculator",
-        "//mediapipe/calculators/util:detections_to_render_data_calculator",
-        "//mediapipe/modules/face_detection:face_detection_full_range_cpu",
         "//mediapipe/calculators/core:constant_side_packet_calculator",
         "//mediapipe/modules/face_landmark:face_landmark_front_cpu",
         "//mediapipe/graphs/face_mesh/subgraphs:face_renderer_cpu",
+
+        "//mediapipe/tasks/cc/vision/face_landmarker:face_landmarker_graph",
+        "//mediapipe/tasks/cc/vision/face_landmarker/proto:face_landmarker_graph_options_cc_proto",
+        "//mediapipe/graphs/kaka_face_landmark/calculators:imageframe_to_image_calculator",
+        "//mediapipe/graphs/kaka_face_landmark/calculators:image_to_imageframe_calculator",
+    ],
+    data = [
+        "//mediapipe/models:face_landmarker.task",
     ],
 )
