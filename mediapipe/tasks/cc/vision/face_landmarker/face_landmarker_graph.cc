@@ -344,7 +344,9 @@ class FaceLandmarkerGraph : public core::ModelTaskGraph {
                         sc->MutableOptions<FaceLandmarkerGraphOptions>()
                             ->mutable_face_geometry_graph_options()
                             ->mutable_geometry_pipeline_options()
-                            ->mutable_metadata_file());
+                            ->mutable_metadata_file(),
+                        !sc->Service(::mediapipe::tasks::core::kModelResourcesCacheService)
+                             .IsAvailable());
       }
     }
     std::optional<SidePacket<Environment>> environment;
