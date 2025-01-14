@@ -829,3 +829,24 @@ http_archive(
     strip_prefix = "skia-ac75382cb971d2f5465b4608a74561ecb68599c5/include/config",
     urls = ["https://github.com/google/skia/archive/ac75382cb971d2f5465b4608a74561ecb68599c5.zip"],
 )
+
+# You may run setup_android.sh to install Android SDK and NDK.
+android_ndk_repository(
+    name = "androidndk",
+    # please set environment variable ANDROID_NDK_HOME
+    path = "/Users/kaka/Library/Android/sdk/ndk/26.3.11579264",
+
+    # for compatibility see: https://github.com/google/mediapipe/issues/178#issuecomment-547619564
+    api_level = 26,
+)
+
+android_sdk_repository(
+    # please set environment variable ANDROID_HOME
+    name = "androidsdk",
+    path = "/Users/kaka/Library/Android/sdk",
+)
+
+bind(
+    name = "android/crosstool",
+    actual = "@androidndk//:toolchain",
+)

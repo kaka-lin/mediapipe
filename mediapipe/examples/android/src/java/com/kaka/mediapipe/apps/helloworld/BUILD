@@ -23,5 +23,6 @@ android_binary(
     multidex = "native",
     deps = [
         ":basic_lib",
+        "//third_party:libc++_shared_lib"
     ],
 )
