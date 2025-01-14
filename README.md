@@ -5,6 +5,12 @@ title: Home
 nav_order: 1
 ---
 
+> About Kaka branch:
+> - Update time: 2025/01/14
+> - TensorFlow version: v2.18.0
+>   - commit: 5329ec8dd396487982ef3e743f98c0195af39a6b
+> - MediaPipe version: v0.10.20
+
 ----
 
 **Attention:** *We have moved to
