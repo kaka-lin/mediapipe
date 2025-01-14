@@ -15,8 +15,6 @@ absl-py==1.4.0
     #   tensorflow-metadata
     #   tensorflow-model-optimization
     #   tf-slim
-ai-edge-litert==1.0.1
-    # via -r mediapipe/opensource_only/model_maker_requirements_bazel.txt
 array-record==0.5.1
     # via tensorflow-datasets
 astunparse==1.6.3
@@ -122,7 +120,6 @@ ml-dtypes==0.3.2
 numpy==1.26.4
     # via
     #   -r mediapipe/opensource_only/model_maker_requirements_bazel.txt
-    #   ai-edge-litert
     #   contourpy
     #   etils
     #   h5py

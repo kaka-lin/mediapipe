@@ -54,7 +54,9 @@ extension LlmInference {
         topp: options.topp,
         temperature: options.temperature,
         random_seed: options.randomSeed,
-        lora_path: nil)
+        lora_path: nil,
+        include_token_cost_calculator: true,
+        enable_vision_modality: false)
 
       /// If `loraPath` is != nil, modify session config with the corresponding C string and invoke
       /// the method to create session runner within the scope where the C String of the `loraPath`
@@ -67,7 +69,7 @@ extension LlmInference {
         } ?? llmInference.createSessionRunner(sessionConfig: sessionConfig)
 
       self.llmInference = llmInference
-      self.metrics = Metrics(responseGenerationTimeInMillis: 0)
+      self.metrics = Metrics(responseGenerationTimeInSeconds: 0)
       super.init()
     }
 
@@ -97,7 +99,7 @@ extension LlmInference {
     init(llmSessionRunner: LlmSessionRunner, llmInference: LlmInference) {
       self.llmSessionRunner = llmSessionRunner
       self.llmInference = llmInference
-      self.metrics = Metrics(responseGenerationTimeInMillis: 0)
+      self.metrics = Metrics(responseGenerationTimeInSeconds: 0)
       super.init()
     }
 
@@ -256,9 +258,8 @@ extension LlmInference {
     private func markResponseGenerationCompleted() {
       llmInference.markResponseGenerationCompleted()
       metrics = Metrics(
-        responseGenerationTimeInMillis: (TimeInterval(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW))
-          - responseGenerationStartTime) * 1000
-          / TimeInterval(NSEC_PER_SEC))
+        responseGenerationTimeInSeconds: (TimeInterval(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW))
+          - responseGenerationStartTime) / TimeInterval(NSEC_PER_SEC))
     }
 
     private static func humanReadableString(
@@ -310,13 +311,11 @@ extension LlmInference.Session {
   /// Note: Inherits from `NSObject` for Objective C interoperability.
   @objc(MPPLLMInferenceSessionMetrics) public final class Metrics: NSObject {
 
-    /// The time it took to generate the full response for last query, in milliseconds.
-    @objc public private(set) var responseGenerationTimeInMillis: TimeInterval
+    /// The time it took to generate the full response for last query, in seconds.
+    @objc public private(set) var responseGenerationTimeInSeconds: TimeInterval
 
-    @objc public init(
-      responseGenerationTimeInMillis: TimeInterval
-    ) {
-      self.responseGenerationTimeInMillis = responseGenerationTimeInMillis
+    @objc public init(responseGenerationTimeInSeconds: TimeInterval) {
+      self.responseGenerationTimeInSeconds = responseGenerationTimeInSeconds
     }
   }
 }

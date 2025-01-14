@@ -65,6 +65,8 @@ import MediaPipeTasksGenAIC
         try options.supportedLoraRanks.withUnsafeMutableBufferPointer { supportedLoraRanks in
           let modelSetting = LlmModelSettings(
             model_path: modelPath,
+            vision_encoder_path: nil,
+            vision_adapter_path: nil,
             cache_dir: cacheDirectory,
             max_num_tokens: options.maxTokens,
             num_decode_steps_per_sync: numberOfDecodeStepsPerSync,
@@ -81,7 +83,7 @@ import MediaPipeTasksGenAIC
     }
     let timeAfterInit = clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW)
     metrics = Metrics(
-      initializationTimeInMillis: (TimeInterval(timeAfterInit - timeBeforeInit) * 1000)
+      initializationTimeInSeconds: TimeInterval(timeAfterInit - timeBeforeInit)
         / TimeInterval(NSEC_PER_SEC))
 
     super.init()
@@ -256,13 +258,13 @@ extension LlmInference {
   ///
   /// Note: Inherits from `NSObject` for Objective C interoperability.
   @objc(MPPLLMInferenceMetrics) public final class Metrics: NSObject {
-    /// The time it took to initialize the LLM inference engine, in milliseconds.
+    /// The time it took to initialize the LLM inference engine, in seconds.
     /// If you want to include the time it took to load the model weights, set
     /// `LlmInference.Options.waitForWeightUploads` to true.
-    @objc public private(set) var initializationTimeInMillis: TimeInterval
+    @objc public let initializationTimeInSeconds: TimeInterval
 
-    @objc public init(initializationTimeInMillis: TimeInterval) {
-      self.initializationTimeInMillis = initializationTimeInMillis
+    @objc public init(initializationTimeInSeconds: TimeInterval) {
+      self.initializationTimeInSeconds = initializationTimeInSeconds
     }
   }
 }
